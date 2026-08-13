@@ -61,5 +61,10 @@
 	"infothequecore-save-success": "Page « $1 » créée avec succès.",
 	"infothequecore-view-page": "Voir la page",
 	"infothequecore-error-no-rows": "Ajoutez au moins une ligne avant de continuer.",
-	"infothequecore-error-field-required": "Ligne $1 : le champ « $2 » est obligatoire."
+	"infothequecore-error-field-required": "Ligne $1 : le champ « $2 » est obligatoire.",
+
+	"infothequecore-insert-context-new": "Insertion dans : $1",
+	"infothequecore-insert-context-existing": "Modification du tableau existant sur : $1 — les lignes actuelles ont été pré-remplies ci-dessous.",
+	"infothequecore-insert-button": "Insérer dans l'éditeur",
+	"infothequecore-insert-hint": "Rien n'est encore enregistré sur le wiki : cette fenêtre va se fermer et le résultat sera placé dans l'éditeur. Vérifiez puis enregistrez la page vous-même."
 }

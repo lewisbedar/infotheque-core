@@ -5,6 +5,7 @@ namespace MediaWiki\Extension\InfothequeCore;
 use HTMLForm;
 use MediaWiki\CommentStore\CommentStoreComment;
 use MediaWiki\Content\WikitextContent;
+use MediaWiki\Extension\InfothequeCore\Generator\ExistingBlockParser;
 use MediaWiki\Extension\InfothequeCore\Generator\Validator;
 use MediaWiki\Extension\InfothequeCore\Generator\WikitextGenerator;
 use MediaWiki\Extension\InfothequeCore\Schema\FieldDefinition;
@@ -93,29 +94,62 @@ class SpecialInfothequeCore extends SpecialPage {
 	}
 
 	private function showEditForm( FormSchema $schema ): void {
-		$formDescriptor = [
-			'targetPage' => [
+		$request = $this->getRequest();
+		$insertMode = (bool)$request->getVal( 'ithcInsert', $request->getVal( 'insert', '' ) );
+		$pageParam = $request->getVal( 'ithcPage', $request->getVal( 'page', '' ) );
+
+		$existing = null;
+		if ( $insertMode ) {
+			$rawExisting = $request->getVal( 'existing', '' );
+			if ( $rawExisting !== '' ) {
+				$existing = ( new ExistingBlockParser() )->parse( $schema, $rawExisting );
+			}
+			$this->getOutput()->addHTML( Html::element(
+				'p',
+				[ 'class' => 'ithc-insert-context' ],
+				$this->msg(
+					$existing !== null ? 'infothequecore-insert-context-existing' : 'infothequecore-insert-context-new',
+					$pageParam
+				)->text()
+			) );
+		}
+
+		$formDescriptor = [];
+		if ( $insertMode ) {
+			$formDescriptor['ithcInsert'] = [ 'type' => 'hidden', 'default' => '1' ];
+			$formDescriptor['ithcPage'] = [ 'type' => 'hidden', 'default' => $pageParam ];
+		} else {
+			$formDescriptor['targetPage'] = [
 				'type' => 'title',
 				'label-message' => 'infothequecore-field-target-page',
 				'help-message' => 'infothequecore-field-target-page-help',
 				'required' => true,
-			],
-		];
-
-		foreach ( $schema->titleFields as $field ) {
-			$formDescriptor[ $field->key ] = $this->fieldDescriptor( $field );
+			];
 		}
 
+		foreach ( $schema->titleFields as $field ) {
+			$desc = $this->fieldDescriptor( $field );
+			if ( isset( $existing['title'][ $field->key ] ) ) {
+				$desc['default'] = $existing['title'][ $field->key ];
+			}
+			$formDescriptor[ $field->key ] = $desc;
+		}
+
+		$existingRows = $existing['rows'] ?? [];
 		for ( $slot = 1; $slot <= WikitextGenerator::MAX_ROWS; $slot++ ) {
 			$formDescriptor[ 'row' . $slot . '_heading' ] = [
 				'type' => 'info',
 				'default' => $this->msg( 'infothequecore-row-section', $slot )->text(),
 			];
+			$existingRow = $existingRows[ $slot - 1 ] ?? [];
 			foreach ( $schema->rowFields as $field ) {
 				$desc = $this->fieldDescriptor( $field );
 				// Requiredness is enforced by Validator only for rows actually
 				// filled in — most row slots are legitimately left empty.
 				$desc['required'] = false;
+				if ( isset( $existingRow[ $field->key ] ) ) {
+					$desc['default'] = $existingRow[ $field->key ];
+				}
 				$formDescriptor[ 'row' . $slot . '_' . $field->key ] = $desc;
 			}
 		}
@@ -171,16 +205,22 @@ class SpecialInfothequeCore extends SpecialPage {
 		$generator = new WikitextGenerator();
 		$wikitext = $generator->generate( $schema, $data );
 
-		$targetTitle = Title::newFromText( $data['targetPage'] ?? '' );
-		if ( $targetTitle === null ) {
-			$out->addHTML( Html::errorBox( $this->msg( 'infothequecore-invalid-target-page' )->escaped() ) );
-			return;
+		$insertMode = !empty( $data['ithcInsert'] );
+
+		if ( $insertMode ) {
+			$contextTitle = Title::newFromText( $data['ithcPage'] ?? '' ) ?? $this->getPageTitle();
+		} else {
+			$contextTitle = Title::newFromText( $data['targetPage'] ?? '' );
+			if ( $contextTitle === null ) {
+				$out->addHTML( Html::errorBox( $this->msg( 'infothequecore-invalid-target-page' )->escaped() ) );
+				return;
+			}
 		}
 
 		try {
 			$parserOutput = MediaWikiServices::getInstance()->getParser()->parse(
 				$wikitext,
-				$targetTitle,
+				$contextTitle,
 				ParserOptions::newFromContext( $this->getContext() )
 			);
 		} catch ( \Throwable $e ) {
@@ -195,9 +235,14 @@ class SpecialInfothequeCore extends SpecialPage {
 		$out->addHTML( Html::element( 'h3', [], $this->msg( 'infothequecore-preview-wikitext-heading' )->text() ) );
 		$out->addHTML( Html::element( 'pre', [ 'class' => 'ithc-preview-wikitext' ], $wikitext ) );
 
-		if ( $targetTitle->exists() ) {
+		if ( $insertMode ) {
+			$this->renderInsertButton( $wikitext );
+			return;
+		}
+
+		if ( $contextTitle->exists() ) {
 			$out->addHTML( Html::warningBox(
-				$this->msg( 'infothequecore-page-exists-warning', $targetTitle->getPrefixedText() )->parse()
+				$this->msg( 'infothequecore-page-exists-warning', $contextTitle->getPrefixedText() )->parse()
 			) );
 			return;
 		}
@@ -207,7 +252,7 @@ class SpecialInfothequeCore extends SpecialPage {
 			'action' => $this->getPageTitle( $schema->id )->getLocalURL(),
 		] ) );
 		$out->addHTML( Html::hidden( 'ithcStage', 'confirm' ) );
-		$out->addHTML( Html::hidden( 'ithcTargetPage', $targetTitle->getPrefixedText() ) );
+		$out->addHTML( Html::hidden( 'ithcTargetPage', $contextTitle->getPrefixedText() ) );
 		$out->addHTML( Html::hidden( 'ithcWikitext', $wikitext ) );
 		$out->addHTML( Html::hidden( 'wpEditToken', $this->getUser()->getEditToken() ) );
 		$out->addHTML( Html::submitButton(
@@ -215,6 +260,25 @@ class SpecialInfothequeCore extends SpecialPage {
 			[ 'class' => 'mw-ui-button mw-ui-progressive' ]
 		) );
 		$out->addHTML( Html::closeElement( 'form' ) );
+	}
+
+	private function renderInsertButton( string $wikitext ): void {
+		$out = $this->getOutput();
+		$out->addHTML( Html::element(
+			'button',
+			[
+				'type' => 'button',
+				'id' => 'ithc-insert-btn',
+				'class' => 'mw-ui-button mw-ui-progressive',
+				'data-wikitext' => $wikitext,
+			],
+			$this->msg( 'infothequecore-insert-button' )->text()
+		) );
+		$out->addHTML( Html::element(
+			'p',
+			[ 'class' => 'ithc-insert-hint' ],
+			$this->msg( 'infothequecore-insert-hint' )->text()
+		) );
 	}
 
 	private function handleConfirm( FormSchema $schema ): void {

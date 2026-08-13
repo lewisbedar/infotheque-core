@@ -17,3 +17,12 @@
 	max-width: 100%;
 	overflow-x: auto;
 }
+
+.ithc-insert-context {
+	font-weight: bold;
+}
+
+.ithc-insert-hint {
+	color: #54595d;
+	font-size: 0.9em;
+}

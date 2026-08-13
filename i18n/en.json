@@ -61,5 +61,10 @@
 	"infothequecore-save-success": "Page \"$1\" created successfully.",
 	"infothequecore-view-page": "View page",
 	"infothequecore-error-no-rows": "Add at least one row before continuing.",
-	"infothequecore-error-field-required": "Row $1: field \"$2\" is required."
+	"infothequecore-error-field-required": "Row $1: field \"$2\" is required.",
+
+	"infothequecore-insert-context-new": "Inserting into: $1",
+	"infothequecore-insert-context-existing": "Editing the existing table on: $1 — current rows have been pre-filled below.",
+	"infothequecore-insert-button": "Insert into the editor",
+	"infothequecore-insert-hint": "Nothing is saved to the wiki yet: this window will close and the result will be placed in the editor. Review it, then save the page yourself."
 }
