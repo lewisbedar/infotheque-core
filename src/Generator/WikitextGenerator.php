@@ -9,32 +9,25 @@ use MediaWiki\Extension\InfothequeCore\Schema\FormSchema;
  * describes. Rows are compacted: only rows whose key field (e.g.
  * "edition", "variante", "nom") is filled in are emitted, renumbered
  * contiguously from 1 — the target Lua modules stop at the first missing
- * numbered row, so gaps left by empty rows in the form must not leak
- * through as gaps in the output.
+ * numbered row, so gaps must not leak through as gaps in the output.
  *
  * collect() is the single source of truth (per-field values already run
  * through FieldDefinition::toWikitext(), so already escaped/wrapped);
- * generate() is just a text assembly on top of it. The editor-insertion
- * bridge (ext.infothequeCore.editorButton.js) consumes the structured
- * form directly instead of re-deriving it from generated text.
+ * generate() is just a text assembly on top of it. This structured shape
+ * (title values + an ordered list of row values) is exactly what both
+ * ExistingBlockParser::parse() produces and what the editor overlay's
+ * dynamic row UI naturally works with — no flat "row{n}_{key}"/row-count
+ * limit needed once HTMLForm isn't the caller.
  */
 class WikitextGenerator {
 
 	/**
-	 * Number of row slots rendered in the form. 20 matches the row count
-	 * Modèle:Téléchargements pre-declares in its own TemplateData for
-	 * VisualEditor, so pre-filling a page with a long download history
-	 * doesn't lose rows. True dynamic add/remove is a later enhancement.
-	 */
-	public const MAX_ROWS = 20;
-
-	/**
 	 * @param FormSchema $schema
-	 * @param array<string,string> $data Field values keyed as returned by
-	 *   HTMLForm: title field keys as-is, row field keys as "row{n}_{key}".
+	 * @param array<string,string> $titleValues Raw values keyed by title field key.
+	 * @param list<array<string,string>> $rowsValues Raw values keyed by row field key, one entry per row.
 	 */
-	public function generate( FormSchema $schema, array $data ): string {
-		$structured = $this->collect( $schema, $data );
+	public function generate( FormSchema $schema, array $titleValues, array $rowsValues ): string {
+		$structured = $this->collect( $schema, $titleValues, $rowsValues );
 		$lines = [ '{{' . $schema->templateName ];
 
 		foreach ( $structured['title'] as $key => $value ) {
@@ -55,26 +48,27 @@ class WikitextGenerator {
 
 	/**
 	 * @param FormSchema $schema
-	 * @param array<string,string> $data
+	 * @param array<string,string> $titleValues
+	 * @param list<array<string,string>> $rowsValues
 	 * @return array{title: array<string,string>, rows: list<array<string,string>>}
 	 *   Non-empty title field values keyed by field key, and one entry per
 	 *   used row (in submission order) keyed the same way. Values are
 	 *   already wikitext-ready (escaped/wrapped).
 	 */
-	public function collect( FormSchema $schema, array $data ): array {
+	public function collect( FormSchema $schema, array $titleValues, array $rowsValues ): array {
 		$title = [];
 		foreach ( $schema->titleFields as $field ) {
-			$value = trim( $data[ $field->key ] ?? '' );
+			$value = trim( $titleValues[ $field->key ] ?? '' );
 			if ( $value !== '' ) {
 				$title[ $field->key ] = $field->toWikitext( $value );
 			}
 		}
 
 		$rows = [];
-		foreach ( $this->usedSlots( $schema, $data ) as $slot ) {
+		foreach ( $this->usedRows( $schema, $rowsValues ) as $rawRow ) {
 			$row = [];
 			foreach ( $schema->rowFields as $field ) {
-				$value = trim( $data[ 'row' . $slot . '_' . $field->key ] ?? '' );
+				$value = trim( $rawRow[ $field->key ] ?? '' );
 				if ( $value === '' ) {
 					continue;
 				}
@@ -88,16 +82,13 @@ class WikitextGenerator {
 
 	/**
 	 * @param FormSchema $schema
-	 * @param array<string,string> $data
-	 * @return int[] Form slot numbers (1..MAX_ROWS) whose key field is filled in.
+	 * @param list<array<string,string>> $rowsValues
+	 * @return list<array<string,string>> Only the rows whose key field is filled in.
 	 */
-	public function usedSlots( FormSchema $schema, array $data ): array {
-		$slots = [];
-		for ( $slot = 1; $slot <= self::MAX_ROWS; $slot++ ) {
-			if ( trim( $data[ 'row' . $slot . '_' . $schema->rowKeyField ] ?? '' ) !== '' ) {
-				$slots[] = $slot;
-			}
-		}
-		return $slots;
+	public function usedRows( FormSchema $schema, array $rowsValues ): array {
+		return array_values( array_filter(
+			$rowsValues,
+			static fn ( array $row ): bool => trim( $row[ $schema->rowKeyField ] ?? '' ) !== ''
+		) );
 	}
 }

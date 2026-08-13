@@ -16,15 +16,15 @@ class Validator {
 
 	/**
 	 * @param FormSchema $schema
-	 * @param array<string,string> $data
+	 * @param array<string,string> $titleValues
+	 * @param list<array<string,string>> $rowsValues
 	 * @return ValidationMessage[]
 	 */
-	public function validate( FormSchema $schema, array $data ): array {
+	public function validate( FormSchema $schema, array $titleValues, array $rowsValues ): array {
 		$messages = [];
-		$generator = new WikitextGenerator();
-		$usedSlots = $generator->usedSlots( $schema, $data );
+		$usedRows = ( new WikitextGenerator() )->usedRows( $schema, $rowsValues );
 
-		if ( $usedSlots === [] ) {
+		if ( $usedRows === [] ) {
 			$messages[] = new ValidationMessage(
 				ValidationMessage::ERROR,
 				wfMessage( 'infothequecore-error-no-rows' )->text()
@@ -32,18 +32,18 @@ class Validator {
 			return $messages;
 		}
 
-		foreach ( $usedSlots as $displaySlot => $slot ) {
+		foreach ( $usedRows as $index => $row ) {
 			foreach ( $schema->rowFields as $field ) {
 				if ( !$field->required ) {
 					continue;
 				}
-				$value = trim( $data[ 'row' . $slot . '_' . $field->key ] ?? '' );
+				$value = trim( $row[ $field->key ] ?? '' );
 				if ( $value === '' ) {
 					$messages[] = new ValidationMessage(
 						ValidationMessage::ERROR,
 						wfMessage(
 							'infothequecore-error-field-required',
-							$displaySlot + 1,
+							$index + 1,
 							wfMessage( $field->labelMsg )->text()
 						)->text()
 					);

@@ -59,10 +59,5 @@
 	"infothequecore-error-no-rows": "Validation error when no row's key field (e.g. edition/variante/nom) was filled in.",
 	"infothequecore-error-field-required": "Validation error for a required field left empty on a row that is otherwise in use. $1 is the row number, $2 is the field's label.",
 
-	"infothequecore-insert-context-new": "Shown above the insert-mode form when no existing table was found on the page. $1 is the page name, supplied by the editor button.",
-	"infothequecore-insert-context-existing": "Shown above the insert-mode form when an existing table was found and parsed from the page. $1 is the page name.",
-	"infothequecore-insert-button": "Button label on the preview step in insert mode, in place of infothequecore-publish-button. Purely client-side: sends the wikitext back to the opener window via postMessage.",
-	"infothequecore-insert-hint": "Reassurance text shown under infothequecore-insert-button, explaining that nothing is saved to the wiki until the user saves the page themselves.",
-
-	"infothequecore-editor-trigger": "Label of the single trigger button injected in the source editor, which opens a dropdown of the 4 assistant forms."
+	"infothequecore-editor-trigger": "Label of the single trigger button injected in the source editor, which opens the assistant overlay."
 }
