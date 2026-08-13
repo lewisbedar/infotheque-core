@@ -76,5 +76,6 @@
 	"infothequecore-links-url-placeholder": "Placeholder for the URL input in a Links-widget entry.",
 	"infothequecore-links-label-placeholder": "Placeholder for the link-text input in a Links-widget entry.",
 	"infothequecore-links-remove": "Tooltip on the × button removing one link entry in a Links-widget cell.",
-	"infothequecore-photo-browse-placeholder": "Placeholder for the file-search input shown next to a File-widget field, to browse already-uploaded files."
+	"infothequecore-photo-browse-placeholder": "Placeholder for the file-search input shown next to a File-widget field, to browse already-uploaded files.",
+	"infothequecore-select-placeholder": "Text shown on a closed MultiSelect dropdown button when nothing is selected yet."
 }

@@ -76,9 +76,9 @@
 .ithc-form-modal {
 	position: relative;
 	box-sizing: border-box;
-	width: 1180px;
-	max-width: 97vw;
-	max-height: 90vh;
+	width: 98vw;
+	max-width: 1800px;
+	max-height: 92vh;
 	overflow-y: auto;
 	background: #ffffff;
 	color: #1f2328;
@@ -164,7 +164,7 @@
 .ithc-rows-table th,
 .ithc-rows-table td {
 	border: 1px solid #a2a9b1;
-	padding: 6px 8px;
+	padding: 3px;
 	vertical-align: top;
 }
 
@@ -174,14 +174,20 @@
 	font-size: 0.82em;
 	text-align: left;
 	white-space: nowrap;
+	padding: 6px 8px;
 }
 
+/* Inputs fill the cell edge-to-edge instead of sitting cramped inside
+   extra cell padding, so the visible typing area matches the column
+   width as closely as possible. */
 .ithc-rows-table .ithc-field-input {
-	min-width: 8em;
+	min-width: 11em;
+	margin: 0;
+	border-radius: 4px;
 }
 
 .ithc-rows-table textarea.ithc-field-input {
-	min-width: 12em;
+	min-width: 16em;
 }
 
 .ithc-row-actions-cell {
@@ -302,13 +308,37 @@
 	margin-top: 4px;
 }
 
-/* MultiSelect widget: a compact checkbox stack. */
+/* MultiSelect widget: a closed dropdown button that opens a checkbox
+   panel, positioned like the trigger dropdown (fixed + JS-computed
+   coordinates — this skin breaks position:absolute here). */
 
 .ithc-multiselect-wrap {
+	position: relative;
+	display: block;
+}
+
+.ithc-multiselect-btn {
+	text-align: left;
+	cursor: pointer;
+	background: #ffffff;
+}
+
+.ithc-multiselect-panel {
+	position: fixed;
+	z-index: 30;
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
-	padding-top: 4px;
+	margin-top: 2px;
+	padding: 8px 10px;
+	background: #ffffff;
+	border: 1px solid #c9ced6;
+	border-radius: 8px;
+	box-shadow: 0 4px 16px rgba( 0, 0, 0, 0.15 );
+}
+
+.ithc-multiselect-panel[hidden] {
+	display: none;
 }
 
 .ithc-checkbox-label {

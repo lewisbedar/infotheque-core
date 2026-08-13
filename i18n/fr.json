@@ -80,5 +80,6 @@
 	"infothequecore-links-url-placeholder": "URL",
 	"infothequecore-links-label-placeholder": "Texte du lien",
 	"infothequecore-links-remove": "Supprimer ce lien",
-	"infothequecore-photo-browse-placeholder": "Rechercher un fichier déjà importé…"
+	"infothequecore-photo-browse-placeholder": "Rechercher un fichier déjà importé…",
+	"infothequecore-select-placeholder": "Choisir…"
 }

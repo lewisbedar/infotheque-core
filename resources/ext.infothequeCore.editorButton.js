@@ -527,9 +527,20 @@
 	}
 
 	/** Several choices at once (checkboxes), joined with ", ". */
+	/** Closed dropdown button that opens a checkbox panel — several values at once, joined with ", ". */
 	function renderMultiSelectInput( field, value, container ) {
 		var wrap = document.createElement( 'span' );
 		wrap.className = 'ithc-multiselect-wrap';
+
+		var button = document.createElement( 'button' );
+		button.type = 'button';
+		button.className = 'ithc-field-input ithc-multiselect-btn';
+		wrap.appendChild( button );
+
+		var panel = document.createElement( 'div' );
+		panel.className = 'ithc-multiselect-panel';
+		panel.hidden = true;
+		wrap.appendChild( panel );
 
 		var selected = ( value || '' ).split( ',' ).map( function ( s ) {
 			return s.trim();
@@ -543,11 +554,41 @@
 			cb.type = 'checkbox';
 			cb.value = v;
 			cb.checked = selected.indexOf( v ) !== -1;
+			cb.addEventListener( 'change', updateButtonText );
 			boxes.push( cb );
 			label.appendChild( cb );
 			label.appendChild( document.createTextNode( ' ' + v ) );
-			wrap.appendChild( label );
+			panel.appendChild( label );
 		} );
+
+		function updateButtonText() {
+			var chosen = boxes.filter( function ( b ) {
+				return b.checked;
+			} ).map( function ( b ) {
+				return b.value;
+			} );
+			button.textContent = chosen.length ? chosen.join( ', ' ) : mw.msg( 'infothequecore-select-placeholder' );
+		}
+		updateButtonText();
+
+		button.addEventListener( 'click', function ( e ) {
+			e.stopPropagation();
+			if ( panel.hidden ) {
+				var rect = button.getBoundingClientRect();
+				panel.style.top = ( rect.bottom + window.scrollY ) + 'px';
+				panel.style.left = ( rect.left + window.scrollX ) + 'px';
+				panel.style.minWidth = rect.width + 'px';
+			}
+			panel.hidden = !panel.hidden;
+		} );
+		document.addEventListener( 'click', function ( e ) {
+			if ( e.target !== button && !panel.contains( e.target ) ) {
+				panel.hidden = true;
+			}
+		} );
+		window.addEventListener( 'scroll', function () {
+			panel.hidden = true;
+		}, true );
 
 		container.appendChild( wrap );
 		return markField( wrap, field, function () {

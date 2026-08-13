@@ -35,14 +35,10 @@ class SchemaRegistry {
 			id: 'telechargements-logiciels',
 			labelMsg: 'infothequecore-form-telechargements-logiciels',
 			templateName: 'Téléchargements',
-			titleFields: [
-				new FieldDefinition(
-					key: 'titre',
-					widget: FieldWidget::Text,
-					labelMsg: 'infothequecore-field-titre',
-					helpMsg: 'infothequecore-field-titre-help'
-				),
-			],
+			// No title field: keep the wiki's own default ("Versions
+			// archivées de [nom de la page]") rather than letting the
+			// form override it — per Lewis, don't ask for a title here.
+			titleFields: [],
 			rowFields: [
 				new FieldDefinition(
 					key: 'edition',

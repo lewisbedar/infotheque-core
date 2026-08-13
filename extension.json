@@ -64,7 +64,8 @@
 				"infothequecore-links-url-placeholder",
 				"infothequecore-links-label-placeholder",
 				"infothequecore-links-remove",
-				"infothequecore-photo-browse-placeholder"
+				"infothequecore-photo-browse-placeholder",
+				"infothequecore-select-placeholder"
 			],
 			"dependencies": [
 				"mediawiki.util",
