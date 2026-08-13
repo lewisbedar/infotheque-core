@@ -38,6 +38,28 @@
 				"oojs-ui-core",
 				"oojs-ui-widgets"
 			]
+		},
+		"ext.infothequeCore.editorButton": {
+			"localBasePath": "resources",
+			"remoteExtPath": "InfothequeCore/resources",
+			"scripts": [
+				"ext.infothequeCore.editorButton.js"
+			],
+			"styles": [
+				"ext.infothequeCore.editorButton.css"
+			],
+			"messages": [
+				"infothequecore-form-telechargements-logiciels",
+				"infothequecore-form-manuels",
+				"infothequecore-form-configurations",
+				"infothequecore-form-pilotes"
+			],
+			"dependencies": [
+				"mediawiki.util"
+			]
 		}
+	},
+	"Hooks": {
+		"EditPage::showEditForm:initial": "MediaWiki\\Extension\\InfothequeCore\\Hooks::onEditPageShowEditFormInitial"
 	}
 }

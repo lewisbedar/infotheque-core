@@ -1,0 +1,24 @@
+/* Buttons injected before #wpTextbox1 in source-mode editing, styled to
+   match the existing "+ Ajouter un téléchargement" gadget button
+   (.ith-dl-add-btn in MediaWiki:Common.css). */
+
+.ithc-editor-buttons {
+	margin: 0 0 10px 0;
+}
+
+.ithc-editor-btn {
+	display: inline-block;
+	margin: 0 8px 8px 0;
+	padding: 8px 14px;
+	border: 1px solid #b6c7f2;
+	border-radius: 10px;
+	background: #f5f8ff;
+	color: #1f2328;
+	font-weight: 700;
+	font-size: 0.9em;
+	cursor: pointer;
+}
+
+.ithc-editor-btn:hover {
+	background: #eef3ff;
+}
