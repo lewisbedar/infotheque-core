@@ -2,10 +2,6 @@
    "+ Ajouter un téléchargement" gadget button (.ith-dl-add-btn in
    MediaWiki:Common.css). */
 
-.ithc-trigger-wrap {
-	margin: 0 0 10px 0;
-}
-
 .ithc-editor-btn {
 	display: inline-block;
 	padding: 8px 14px;
@@ -23,13 +19,15 @@
 }
 
 .ithc-dropdown {
+	position: fixed;
+	z-index: 30;
 	display: flex;
 	flex-direction: column;
 	margin-top: 4px;
 	background: #ffffff;
 	border: 1px solid #c9ced6;
 	border-radius: 10px;
-	box-shadow: 0 2px 8px rgba( 0, 0, 0, 0.1 );
+	box-shadow: 0 4px 16px rgba( 0, 0, 0, 0.15 );
 	overflow: hidden;
 	max-width: 320px;
 }

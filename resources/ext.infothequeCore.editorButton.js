@@ -50,17 +50,20 @@
 	}
 
 	function addTrigger( textarea ) {
-		var wrap = document.createElement( 'div' );
-		wrap.className = 'ithc-trigger-wrap';
-
 		var trigger = document.createElement( 'button' );
 		trigger.type = 'button';
 		trigger.className = 'ithc-editor-btn';
 		trigger.textContent = mw.msg( 'infothequecore-editor-trigger' );
+		trigger.style.marginBottom = '10px';
 
+		// Appended to <body> and positioned in JS (not CSS position:absolute
+		// under the button) because this skin has an ancestor that creates a
+		// new containing block, which made position:absolute render the menu
+		// far from the button instead of right under it.
 		var dropdown = document.createElement( 'div' );
 		dropdown.className = 'ithc-dropdown';
 		dropdown.hidden = true;
+		document.body.appendChild( dropdown );
 
 		SCHEMAS.forEach( function ( schema ) {
 			var item = document.createElement( 'button' );
@@ -76,17 +79,23 @@
 
 		trigger.addEventListener( 'click', function ( e ) {
 			e.stopPropagation();
+			if ( dropdown.hidden ) {
+				var rect = trigger.getBoundingClientRect();
+				dropdown.style.top = ( rect.bottom + window.scrollY ) + 'px';
+				dropdown.style.left = ( rect.left + window.scrollX ) + 'px';
+			}
 			dropdown.hidden = !dropdown.hidden;
 		} );
 		document.addEventListener( 'click', function ( e ) {
-			if ( !wrap.contains( e.target ) ) {
+			if ( e.target !== trigger && !dropdown.contains( e.target ) ) {
 				dropdown.hidden = true;
 			}
 		} );
+		window.addEventListener( 'scroll', function () {
+			dropdown.hidden = true;
+		}, true );
 
-		wrap.appendChild( trigger );
-		wrap.appendChild( dropdown );
-		textarea.parentNode.insertBefore( wrap, textarea );
+		textarea.parentNode.insertBefore( trigger, textarea );
 	}
 
 	/** Depth-counts {{ }} from startIdx, returns the index of the matching closing "}}", or -1. */
