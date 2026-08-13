@@ -37,5 +37,25 @@
 	"infothequecore-field-os-pilote": "Field label: target OS, Pilotes form (maps to osN).",
 	"infothequecore-field-date-pilote": "Field label: driver date, Pilotes form (maps to dateN).",
 	"infothequecore-field-fichier-pilote": "Field label: uploaded file picker, Pilotes form (maps to fichierN, bare file name, no [[Fichier:]] wrapper).",
-	"infothequecore-field-fichier-pilote-help": "Help text for infothequecore-field-fichier-pilote."
+	"infothequecore-field-fichier-pilote-help": "Help text for infothequecore-field-fichier-pilote.",
+
+	"infothequecore-unknown-form": "Error shown when the URL subpage doesn't match a known schema id.",
+	"infothequecore-back-to-selector": "Subtitle link back to the content-type selector, shown on every schema form.",
+	"infothequecore-field-target-page": "Field label: the wiki page the generated table will be written to.",
+	"infothequecore-field-target-page-help": "Help text for infothequecore-field-target-page.",
+	"infothequecore-row-section": "Heading shown above each repeatable row block. $1 is the row number.",
+	"infothequecore-preview-button": "Submit button label on the data-entry step, leading to the preview step.",
+	"infothequecore-preview-heading": "Heading above the rendered preview of the generated table.",
+	"infothequecore-preview-wikitext-heading": "Heading above the raw generated wikitext block.",
+	"infothequecore-page-exists-warning": "Warning shown instead of the publish button when the target page already exists. $1 is the page's prefixed text.",
+	"infothequecore-publish-button": "Submit button label on the preview step, only shown when the target page doesn't exist yet.",
+	"infothequecore-invalid-target-page": "Error shown when the submitted target page name doesn't parse as a valid title.",
+	"infothequecore-bad-token": "Error shown when the CSRF edit token on the publish confirmation doesn't match.",
+	"infothequecore-confirm-missing-data": "Error shown when the publish confirmation step is missing the target page or wikitext.",
+	"infothequecore-edit-summary": "Automatic edit summary used when the assistant creates a page.",
+	"infothequecore-save-failed": "Error shown when PageUpdater::saveRevision does not succeed.",
+	"infothequecore-save-success": "Success message after the assistant creates a page. $1 is the page's prefixed text.",
+	"infothequecore-view-page": "Link text to the page just created.",
+	"infothequecore-error-no-rows": "Validation error when no row's key field (e.g. edition/variante/nom) was filled in.",
+	"infothequecore-error-field-required": "Validation error for a required field left empty on a row that is otherwise in use. $1 is the row number, $2 is the field's label."
 }

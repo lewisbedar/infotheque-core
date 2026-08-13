@@ -41,5 +41,25 @@
 	"infothequecore-field-os-pilote": "Target system",
 	"infothequecore-field-date-pilote": "Date",
 	"infothequecore-field-fichier-pilote": "File",
-	"infothequecore-field-fichier-pilote-help": "The file must already be uploaded to the wiki (Tools menu > Upload file)."
+	"infothequecore-field-fichier-pilote-help": "The file must already be uploaded to the wiki (Tools menu > Upload file).",
+
+	"infothequecore-unknown-form": "Unknown form type.",
+	"infothequecore-back-to-selector": "← Change content type",
+	"infothequecore-field-target-page": "Target page",
+	"infothequecore-field-target-page-help": "The wiki page this table will be published to.",
+	"infothequecore-row-section": "Row $1",
+	"infothequecore-preview-button": "Preview",
+	"infothequecore-preview-heading": "Preview",
+	"infothequecore-preview-wikitext-heading": "Generated wikitext",
+	"infothequecore-page-exists-warning": "The page \"$1\" already exists. This assistant doesn't merge content into an existing page yet: copy the wikitext above and paste it yourself at the right spot.",
+	"infothequecore-publish-button": "Publish to the wiki",
+	"infothequecore-invalid-target-page": "The target page name is not valid.",
+	"infothequecore-bad-token": "Invalid security token, please try again.",
+	"infothequecore-confirm-missing-data": "Missing data to publish, please start again from the form.",
+	"infothequecore-edit-summary": "Added via the InfothèqueCore assistant",
+	"infothequecore-save-failed": "Publishing failed. Check your edit rights and try again.",
+	"infothequecore-save-success": "Page \"$1\" created successfully.",
+	"infothequecore-view-page": "View page",
+	"infothequecore-error-no-rows": "Add at least one row before continuing.",
+	"infothequecore-error-field-required": "Row $1: field \"$2\" is required."
 }

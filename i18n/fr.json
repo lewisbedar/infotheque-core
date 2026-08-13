@@ -41,5 +41,25 @@
 	"infothequecore-field-os-pilote": "Système cible",
 	"infothequecore-field-date-pilote": "Date",
 	"infothequecore-field-fichier-pilote": "Fichier",
-	"infothequecore-field-fichier-pilote-help": "Le fichier doit déjà être importé sur le wiki (menu Outils > Importer un fichier)."
+	"infothequecore-field-fichier-pilote-help": "Le fichier doit déjà être importé sur le wiki (menu Outils > Importer un fichier).",
+
+	"infothequecore-unknown-form": "Type de formulaire inconnu.",
+	"infothequecore-back-to-selector": "← Changer de type de contenu",
+	"infothequecore-field-target-page": "Page cible",
+	"infothequecore-field-target-page-help": "La page du wiki sur laquelle ce tableau sera publié.",
+	"infothequecore-row-section": "Ligne $1",
+	"infothequecore-preview-button": "Prévisualiser",
+	"infothequecore-preview-heading": "Aperçu",
+	"infothequecore-preview-wikitext-heading": "Wikitexte généré",
+	"infothequecore-page-exists-warning": "La page « $1 » existe déjà. Cet assistant ne fusionne pas encore le contenu avec une page existante : copiez le wikitexte ci-dessus et collez-le vous-même au bon endroit dans la page.",
+	"infothequecore-publish-button": "Publier sur le wiki",
+	"infothequecore-invalid-target-page": "Le nom de la page cible n'est pas valide.",
+	"infothequecore-bad-token": "Jeton de sécurité invalide, merci de recommencer.",
+	"infothequecore-confirm-missing-data": "Données manquantes pour la publication, merci de recommencer depuis le formulaire.",
+	"infothequecore-edit-summary": "Ajout via l'assistant de saisie InfothèqueCore",
+	"infothequecore-save-failed": "La publication a échoué. Vérifiez vos droits d'édition et réessayez.",
+	"infothequecore-save-success": "Page « $1 » créée avec succès.",
+	"infothequecore-view-page": "Voir la page",
+	"infothequecore-error-no-rows": "Ajoutez au moins une ligne avant de continuer.",
+	"infothequecore-error-field-required": "Ligne $1 : le champ « $2 » est obligatoire."
 }

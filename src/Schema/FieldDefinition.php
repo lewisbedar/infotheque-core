@@ -35,10 +35,18 @@ class FieldDefinition {
 
 	/**
 	 * Renders a submitted value into the fragment that goes after "=" in
-	 * the generated {{Modèle:...|param=...}} call.
+	 * the generated {{Modèle:...|param=...}} call. File fields get a
+	 * defensively-stripped "Fichier:"/"File:" prefix, since the wiki
+	 * convention (see Modèle:Pilotes) is to store the bare file name.
 	 */
 	public function toWikitext( string $value ): string {
-		if ( $this->wikitextWrap === null || $value === '' ) {
+		if ( $value === '' ) {
+			return $value;
+		}
+		if ( $this->widget === FieldWidget::File ) {
+			$value = preg_replace( '/^(Fichier|File)\s*:\s*/iu', '', $value );
+		}
+		if ( $this->wikitextWrap === null ) {
 			return $value;
 		}
 		return sprintf( $this->wikitextWrap, $value );

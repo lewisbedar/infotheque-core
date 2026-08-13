@@ -1,1 +1,19 @@
-/* Styles for Special:InfothequeCore, added as the form UI grows. */
+/* Styles for Special:InfothequeCore. */
+
+.ithc-preview-rendered {
+	border: 1px solid #a2a9b1;
+	border-radius: 2px;
+	padding: 1em;
+	margin-bottom: 1em;
+}
+
+.ithc-preview-wikitext {
+	white-space: pre-wrap;
+	word-break: break-word;
+	background: #f8f9fa;
+	border: 1px solid #a2a9b1;
+	border-radius: 2px;
+	padding: 1em;
+	max-width: 100%;
+	overflow-x: auto;
+}
