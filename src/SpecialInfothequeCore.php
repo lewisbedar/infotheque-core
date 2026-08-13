@@ -177,11 +177,18 @@ class SpecialInfothequeCore extends SpecialPage {
 			return;
 		}
 
-		$parserOutput = MediaWikiServices::getInstance()->getParserFactory()->create()->parse(
-			$wikitext,
-			$targetTitle,
-			ParserOptions::newFromContext( $this->getContext() )
-		);
+		try {
+			$parserOutput = MediaWikiServices::getInstance()->getParser()->parse(
+				$wikitext,
+				$targetTitle,
+				ParserOptions::newFromContext( $this->getContext() )
+			);
+		} catch ( \Throwable $e ) {
+			$out->addHTML( Html::errorBox(
+				Html::element( 'pre', [], get_class( $e ) . ': ' . $e->getMessage() )
+			) );
+			return;
+		}
 
 		$out->addHTML( Html::element( 'h2', [], $this->msg( 'infothequecore-preview-heading' )->text() ) );
 		$out->addHTML( Html::rawElement( 'div', [ 'class' => 'ithc-preview-rendered' ], $parserOutput->getText() ) );
@@ -236,13 +243,20 @@ class SpecialInfothequeCore extends SpecialPage {
 			return;
 		}
 
-		$wikiPage = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $targetTitle );
-		$updater = $wikiPage->newPageUpdater( $this->getUser() );
-		$updater->setContent( SlotRecord::MAIN, new WikitextContent( $wikitext ) );
-		$updater->saveRevision(
-			CommentStoreComment::newUnsavedComment( $this->msg( 'infothequecore-edit-summary' )->text() ),
-			EDIT_NEW
-		);
+		try {
+			$wikiPage = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $targetTitle );
+			$updater = $wikiPage->newPageUpdater( $this->getUser() );
+			$updater->setContent( SlotRecord::MAIN, new WikitextContent( $wikitext ) );
+			$updater->saveRevision(
+				CommentStoreComment::newUnsavedComment( $this->msg( 'infothequecore-edit-summary' )->text() ),
+				EDIT_NEW
+			);
+		} catch ( \Throwable $e ) {
+			$out->addHTML( Html::errorBox(
+				Html::element( 'pre', [], get_class( $e ) . ': ' . $e->getMessage() )
+			) );
+			return;
+		}
 
 		if ( !$updater->wasSuccessful() ) {
 			$out->addHTML( Html::errorBox( $this->msg( 'infothequecore-save-failed' )->escaped() ) );
