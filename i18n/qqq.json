@@ -59,5 +59,10 @@
 	"infothequecore-error-no-rows": "Validation error when no row's key field (e.g. edition/variante/nom) was filled in.",
 	"infothequecore-error-field-required": "Validation error for a required field left empty on a row that is otherwise in use. $1 is the row number, $2 is the field's label.",
 
-	"infothequecore-editor-trigger": "Label of the single trigger button injected in the source editor, which opens the assistant overlay."
+	"infothequecore-editor-trigger": "Label of the single trigger button injected in the source editor, which opens the assistant overlay.",
+	"infothequecore-add-row": "Button label to add another dynamic row in the JS overlay form.",
+	"infothequecore-remove-row": "Title/tooltip of the per-row × remove button in the JS overlay form.",
+	"infothequecore-loading-existing": "Shown in the overlay while an existing block found under the cursor is being parsed via the API.",
+	"infothequecore-insert-button": "Button label after a successful preview in the JS overlay, splicing the result into the editor textarea client-side.",
+	"infothequecore-preview-failed": "Shown in the overlay if the action=parse API call for the rendered preview fails."
 }

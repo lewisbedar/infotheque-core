@@ -49,11 +49,15 @@
 				"ext.infothequeCore.editorButton.css"
 			],
 			"messages": [
-				"infothequecore-form-telechargements-logiciels",
-				"infothequecore-form-manuels",
-				"infothequecore-form-configurations",
-				"infothequecore-form-pilotes",
-				"infothequecore-editor-trigger"
+				"infothequecore-editor-trigger",
+				"infothequecore-add-row",
+				"infothequecore-remove-row",
+				"infothequecore-loading-existing",
+				"infothequecore-preview-button",
+				"infothequecore-preview-heading",
+				"infothequecore-preview-wikitext-heading",
+				"infothequecore-insert-button",
+				"infothequecore-preview-failed"
 			],
 			"dependencies": [
 				"mediawiki.util",

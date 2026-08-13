@@ -55,3 +55,186 @@
 .ithc-dropdown-item + .ithc-dropdown-item {
 	border-top: 1px solid #eaecf0;
 }
+
+/* Overlay + modal, styled to match the existing gadget's
+   .ith-dl-overlay/.ith-dl-modal (MediaWiki:Common.css) for visual
+   consistency — same wiki, same pattern, no iframe/popup involved. */
+
+.ithc-form-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba( 0, 0, 0, 0.45 );
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+}
+
+.ithc-form-modal {
+	position: relative;
+	box-sizing: border-box;
+	width: 640px;
+	max-width: 92vw;
+	max-height: 88vh;
+	overflow-y: auto;
+	background: #ffffff;
+	color: #1f2328;
+	border-radius: 16px;
+	box-shadow: 0 8px 30px rgba( 0, 0, 0, 0.3 );
+	padding: 20px 22px;
+}
+
+.ithc-form-modal h3 {
+	margin: 0 0 14px 0;
+	font-size: 18px;
+	font-weight: 800;
+}
+
+.ithc-form-modal h4 {
+	margin: 16px 0 8px 0;
+	font-size: 15px;
+	font-weight: 700;
+}
+
+.ithc-form-modal-close {
+	position: absolute;
+	top: 10px;
+	right: 14px;
+	border: none;
+	background: none;
+	font-size: 22px;
+	line-height: 1;
+	cursor: pointer;
+	color: #54595d;
+}
+
+.ithc-loading {
+	color: #54595d;
+}
+
+.ithc-field {
+	margin: 0 0 12px 0;
+}
+
+.ithc-field-label {
+	display: block;
+	font-size: 0.88em;
+	font-weight: 700;
+	color: #4b5563;
+}
+
+.ithc-field-input {
+	box-sizing: border-box;
+	display: block;
+	width: 100%;
+	margin-top: 4px;
+	padding: 7px 10px;
+	border: 1px solid #c9ced6;
+	border-radius: 8px;
+	font-size: 0.95em;
+	font-weight: 400;
+	color: #1f2328;
+	font-family: inherit;
+}
+
+.ithc-field-help {
+	margin: 4px 0 0 0;
+	font-size: 0.82em;
+	font-weight: 400;
+	color: #767f8c;
+}
+
+.ithc-rows {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 10px;
+}
+
+.ithc-row {
+	position: relative;
+	border: 1px solid #eaecf0;
+	border-radius: 10px;
+	padding: 14px 36px 4px 14px;
+	background: #fafbfc;
+}
+
+.ithc-row-remove {
+	position: absolute;
+	top: 8px;
+	right: 10px;
+	border: none;
+	background: none;
+	font-size: 18px;
+	line-height: 1;
+	cursor: pointer;
+	color: #767f8c;
+}
+
+.ithc-row-remove:hover {
+	color: #c0392b;
+}
+
+.ithc-add-row-btn,
+.ithc-btn-primary {
+	padding: 8px 16px;
+	border-radius: 10px;
+	font-weight: 700;
+	font-size: 0.9em;
+	cursor: pointer;
+	border: 1px solid #b6c7f2;
+	background: #f5f8ff;
+	color: #1f2328;
+}
+
+.ithc-add-row-btn:hover,
+.ithc-btn-primary:hover {
+	background: #eef3ff;
+}
+
+.ithc-btn-primary {
+	border-color: #36c;
+	background: #36c;
+	color: #ffffff;
+}
+
+.ithc-btn-primary:hover {
+	background: #2a4b8d;
+}
+
+.ithc-form-errors {
+	margin: 12px 0;
+	padding: 10px 14px;
+	background: #fee7e6;
+	border: 1px solid #c0392b;
+	border-radius: 8px;
+	color: #6b1a12;
+	font-size: 0.9em;
+}
+
+.ithc-form-actions {
+	margin-top: 14px;
+}
+
+.ithc-preview-rendered {
+	border: 1px solid #a2a9b1;
+	border-radius: 8px;
+	padding: 1em;
+	margin-bottom: 1em;
+	overflow-x: auto;
+}
+
+.ithc-preview-wikitext {
+	white-space: pre-wrap;
+	word-break: break-word;
+	background: #f8f9fa;
+	border: 1px solid #a2a9b1;
+	border-radius: 8px;
+	padding: 1em;
+	max-width: 100%;
+	overflow-x: auto;
+	margin-bottom: 1em;
+}

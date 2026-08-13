@@ -1,15 +1,21 @@
 /**
- * Adds a single "Ajouter un modèle Infothèque" button next to the
+ * Adds a single "+ Ajouter un modèle Infothèque" button next to the
  * source-mode edit textarea (#wpTextbox1). Clicking it reveals a small
- * column menu with the 4 assistant forms; picking one opens
- * Special:InfothequeCore as a popup window (window.open — MediaWiki sends
- * X-Frame-Options: deny wiki-wide, likely at the nginx level, which rules
- * out embedding it in an <iframe> in the same window; window.open() isn't
- * affected since that header only restricts framing), and splices the
- * result into the textarea on completion — same cursor-insertion pattern
- * as the existing "+ Ajouter un téléchargement" gadget
- * (MediaWiki:Common.js), generalized to all 4 forms and to full
- * add/edit/delete of an existing table.
+ * column menu with the 4 assistant forms; picking one opens a self-built
+ * overlay (same DOM-injection pattern as the existing "+ Ajouter un
+ * téléchargement" gadget in MediaWiki:Common.js — full-screen dim
+ * background + centered box, no iframe, no popup window) with a form
+ * generated from the schema exported server-side as mw.config's
+ * ithcSchemas (see SchemaExporter/Hooks::onEditPageShowEditFormInitial).
+ *
+ * All business logic (field conventions, escaping, validation, existing
+ * block parsing) stays server-side, called via the action=infothequecore
+ * API module (mw.Api, not a SpecialPage — no skin rendering involved, so
+ * none of the X-Frame-Options/HTMLForm issues that blocked the previous
+ * approach apply here). This module only renders the form generically
+ * from the schema data and, on completion, splices the result into the
+ * textarea — nothing is ever saved to the wiki from here; the user
+ * reviews and saves the page themselves.
  *
  * Detection of an "existing table to edit" is scoped to whichever
  * {{TemplateName...}} block (if any) the cursor is currently inside, not
@@ -21,37 +27,23 @@
 ( function () {
 	'use strict';
 
-	var SCHEMAS = [
-		{ id: 'telechargements-logiciels', templateName: 'Téléchargements', msgKey: 'infothequecore-form-telechargements-logiciels' },
-		{ id: 'manuels', templateName: 'Téléchargements', msgKey: 'infothequecore-form-manuels' },
-		{ id: 'configurations', templateName: 'Configurations', msgKey: 'infothequecore-form-configurations' },
-		{ id: 'pilotes', templateName: 'Pilotes', msgKey: 'infothequecore-form-pilotes' }
-	];
-
-	var hasPendingRequest = false;
-	var pendingBlock = null;
-	var activePopup = null;
+	var SCHEMA_IDS = [ 'telechargements-logiciels', 'manuels', 'configurations', 'pilotes' ];
+	var api = new mw.Api();
+	var currentOverlay = null;
+	var fieldIdCounter = 0;
 
 	function init() {
 		var textarea = document.getElementById( 'wpTextbox1' );
-		if ( !textarea ) {
-			return; // not in source editing mode
+		var schemas = mw.config.get( 'ithcSchemas' );
+		if ( !textarea || !schemas ) {
+			return; // not in source editing mode, or schema export missing
 		}
-		addTrigger( textarea );
-		window.addEventListener( 'message', function ( event ) {
-			if (
-				event.origin !== location.origin ||
-				!hasPendingRequest ||
-				!event.data ||
-				event.data.type !== 'ithc-insert'
-			) {
-				return;
-			}
-			applyResult( textarea, event.data.wikitext );
-		} );
+		addTrigger( textarea, schemas );
 	}
 
-	function addTrigger( textarea ) {
+	// ---- Trigger button + dropdown ----------------------------------------
+
+	function addTrigger( textarea, schemas ) {
 		var trigger = document.createElement( 'button' );
 		trigger.type = 'button';
 		trigger.className = 'ithc-editor-btn';
@@ -67,11 +59,15 @@
 		dropdown.hidden = true;
 		document.body.appendChild( dropdown );
 
-		SCHEMAS.forEach( function ( schema ) {
+		SCHEMA_IDS.forEach( function ( id ) {
+			var schema = schemas[ id ];
+			if ( !schema ) {
+				return;
+			}
 			var item = document.createElement( 'button' );
 			item.type = 'button';
 			item.className = 'ithc-dropdown-item';
-			item.textContent = mw.msg( schema.msgKey );
+			item.textContent = schema.label;
 			item.addEventListener( 'click', function () {
 				dropdown.hidden = true;
 				openAssistant( textarea, schema );
@@ -99,6 +95,8 @@
 
 		textarea.parentNode.insertBefore( trigger, textarea );
 	}
+
+	// ---- Existing-block detection (textarea, unrelated to the overlay) ----
 
 	/** Depth-counts {{ }} from startIdx, returns the index of the matching closing "}}", or -1. */
 	function matchClosingBraces( text, startIdx ) {
@@ -133,34 +131,313 @@
 		return null;
 	}
 
+	// ---- Opening the assistant ---------------------------------------------
+
 	function openAssistant( textarea, schema ) {
-		if ( activePopup && !activePopup.closed ) {
-			activePopup.focus();
-			return;
+		if ( currentOverlay ) {
+			return; // one at a time
 		}
 
 		var cursorPos = textarea.selectionStart || 0;
 		var block = findEnclosingBlock( textarea.value, schema.templateName, cursorPos );
+		var pendingBlock = block ? { start: block.start, end: block.end } : null;
 
-		var params = { insert: '1', page: mw.config.get( 'wgPageName' ) };
-		if ( block ) {
-			params.existing = block.raw;
+		if ( !block ) {
+			buildOverlay( schema, textarea, pendingBlock, {}, [ {} ] );
+			return;
 		}
 
-		activePopup = window.open(
-			mw.util.getUrl( 'Special:InfothequeCore/' + schema.id, params ),
-			'ithcInsert',
-			'width=760,height=800'
-		);
-		if ( !activePopup ) {
-			return; // popup blocked
-		}
-
-		hasPendingRequest = true;
-		pendingBlock = block ? { start: block.start, end: block.end } : null;
+		buildOverlay( schema, textarea, pendingBlock, {}, [ {} ], true );
+		api.post( {
+			action: 'infothequecore',
+			op: 'parseexisting',
+			schema: schema.id,
+			raw: block.raw,
+			formatversion: 2
+		} ).done( function ( data ) {
+			var rows = ( data.rows && data.rows.length ) ? data.rows : [ {} ];
+			buildOverlay( schema, textarea, pendingBlock, data.title || {}, rows );
+		} ).fail( function () {
+			buildOverlay( schema, textarea, pendingBlock, {}, [ {} ] );
+		} );
 	}
 
-	function applyResult( textarea, wikitext ) {
+	// ---- Overlay construction ----------------------------------------------
+
+	function closeOverlay() {
+		if ( currentOverlay ) {
+			currentOverlay.remove();
+			currentOverlay = null;
+		}
+	}
+
+	/**
+	 * (Re)builds the overlay for the given schema. Called once immediately
+	 * (loading=true) while an existing block is being fetched/parsed, then
+	 * again with the real pre-filled data once that resolves.
+	 */
+	function buildOverlay( schema, textarea, pendingBlock, titleValues, rowsValues, loading ) {
+		closeOverlay();
+
+		var overlay = document.createElement( 'div' );
+		overlay.className = 'ithc-form-overlay';
+		overlay.addEventListener( 'click', function ( e ) {
+			if ( e.target === overlay ) {
+				closeOverlay();
+			}
+		} );
+
+		var modal = document.createElement( 'div' );
+		modal.className = 'ithc-form-modal';
+		overlay.appendChild( modal );
+
+		var closeBtn = document.createElement( 'button' );
+		closeBtn.type = 'button';
+		closeBtn.className = 'ithc-form-modal-close';
+		closeBtn.textContent = '×';
+		closeBtn.addEventListener( 'click', closeOverlay );
+		modal.appendChild( closeBtn );
+
+		var heading = document.createElement( 'h3' );
+		heading.textContent = schema.label;
+		modal.appendChild( heading );
+
+		if ( loading ) {
+			var loadingEl = document.createElement( 'p' );
+			loadingEl.className = 'ithc-loading';
+			loadingEl.textContent = mw.msg( 'infothequecore-loading-existing' );
+			modal.appendChild( loadingEl );
+			document.body.appendChild( overlay );
+			currentOverlay = overlay;
+			return;
+		}
+
+		var titleContainer = document.createElement( 'div' );
+		titleContainer.className = 'ithc-title-fields';
+		schema.titleFields.forEach( function ( field ) {
+			titleContainer.appendChild( renderField( field, titleValues[ field.key ] ) );
+		} );
+		modal.appendChild( titleContainer );
+
+		var rowsContainer = document.createElement( 'div' );
+		rowsContainer.className = 'ithc-rows';
+		rowsValues.forEach( function ( rowVals ) {
+			rowsContainer.appendChild( renderRow( schema, rowVals ) );
+		} );
+		modal.appendChild( rowsContainer );
+
+		var addRowBtn = document.createElement( 'button' );
+		addRowBtn.type = 'button';
+		addRowBtn.className = 'ithc-add-row-btn';
+		addRowBtn.textContent = mw.msg( 'infothequecore-add-row' );
+		addRowBtn.addEventListener( 'click', function () {
+			rowsContainer.appendChild( renderRow( schema, {} ) );
+		} );
+		modal.appendChild( addRowBtn );
+
+		var errorsEl = document.createElement( 'ul' );
+		errorsEl.className = 'ithc-form-errors';
+		errorsEl.hidden = true;
+		modal.appendChild( errorsEl );
+
+		var previewSection = document.createElement( 'div' );
+		previewSection.className = 'ithc-form-preview';
+		previewSection.hidden = true;
+		modal.appendChild( previewSection );
+
+		var actions = document.createElement( 'div' );
+		actions.className = 'ithc-form-actions';
+		var previewBtn = document.createElement( 'button' );
+		previewBtn.type = 'button';
+		previewBtn.className = 'ithc-btn-primary';
+		previewBtn.textContent = mw.msg( 'infothequecore-preview-button' );
+		previewBtn.addEventListener( 'click', function () {
+			doPreview( schema, textarea, pendingBlock, titleContainer, rowsContainer, errorsEl, previewSection );
+		} );
+		actions.appendChild( previewBtn );
+		modal.appendChild( actions );
+
+		document.body.appendChild( overlay );
+		currentOverlay = overlay;
+	}
+
+	// ---- Field / row rendering ----------------------------------------------
+
+	function renderField( field, value ) {
+		var wrapper = document.createElement( 'div' );
+		wrapper.className = 'ithc-field';
+
+		var label = document.createElement( 'label' );
+		label.className = 'ithc-field-label';
+		label.appendChild( document.createTextNode( field.label + ( field.required ? ' *' : '' ) ) );
+		wrapper.appendChild( label );
+
+		var input;
+		if ( field.widget === 'textarea' ) {
+			input = document.createElement( 'textarea' );
+			input.rows = 3;
+		} else {
+			input = document.createElement( 'input' );
+			input.type = 'text';
+			if ( field.widget === 'combobox' && field.suggestedValues && field.suggestedValues.length ) {
+				var listId = 'ithc-datalist-' + ( fieldIdCounter++ );
+				var datalist = document.createElement( 'datalist' );
+				datalist.id = listId;
+				field.suggestedValues.forEach( function ( v ) {
+					var opt = document.createElement( 'option' );
+					opt.value = v;
+					datalist.appendChild( opt );
+				} );
+				wrapper.appendChild( datalist );
+				input.setAttribute( 'list', listId );
+			}
+		}
+		input.className = 'ithc-field-input';
+		if ( field.example ) {
+			input.placeholder = field.example;
+		}
+		input.value = value || '';
+		label.appendChild( input );
+
+		if ( field.help ) {
+			var help = document.createElement( 'p' );
+			help.className = 'ithc-field-help';
+			help.textContent = field.help;
+			wrapper.appendChild( help );
+		}
+
+		wrapper.ithcFieldKey = field.key;
+		wrapper.ithcGetValue = function () {
+			return input.value;
+		};
+		return wrapper;
+	}
+
+	function renderRow( schema, rowValues ) {
+		var row = document.createElement( 'div' );
+		row.className = 'ithc-row';
+
+		var removeBtn = document.createElement( 'button' );
+		removeBtn.type = 'button';
+		removeBtn.className = 'ithc-row-remove';
+		removeBtn.textContent = '×';
+		removeBtn.title = mw.msg( 'infothequecore-remove-row' );
+		removeBtn.addEventListener( 'click', function () {
+			row.remove();
+		} );
+		row.appendChild( removeBtn );
+
+		schema.rowFields.forEach( function ( field ) {
+			row.appendChild( renderField( field, rowValues ? rowValues[ field.key ] : '' ) );
+		} );
+
+		return row;
+	}
+
+	function collectFields( container ) {
+		var values = {};
+		Array.prototype.forEach.call( container.querySelectorAll( '.ithc-field' ), function ( fieldEl ) {
+			values[ fieldEl.ithcFieldKey ] = fieldEl.ithcGetValue();
+		} );
+		return values;
+	}
+
+	function collectRows( rowsContainer ) {
+		return Array.prototype.map.call( rowsContainer.querySelectorAll( '.ithc-row' ), collectFields );
+	}
+
+	// ---- Preview / insert ----------------------------------------------------
+
+	function showErrors( errorsEl, messages ) {
+		errorsEl.innerHTML = '';
+		messages.forEach( function ( msg ) {
+			var li = document.createElement( 'li' );
+			li.textContent = msg;
+			errorsEl.appendChild( li );
+		} );
+		errorsEl.hidden = false;
+	}
+
+	function extractApiError( code, err ) {
+		if ( err && err.error && err.error.info ) {
+			return err.error.info;
+		}
+		return String( code );
+	}
+
+	function doPreview( schema, textarea, pendingBlock, titleContainer, rowsContainer, errorsEl, previewSection ) {
+		var titleValues = collectFields( titleContainer );
+		var rowsValues = collectRows( rowsContainer );
+
+		errorsEl.hidden = true;
+		previewSection.hidden = true;
+		previewSection.innerHTML = '';
+
+		api.post( {
+			action: 'infothequecore',
+			op: 'generate',
+			schema: schema.id,
+			title: JSON.stringify( titleValues ),
+			rows: JSON.stringify( rowsValues ),
+			formatversion: 2
+		} ).done( function ( data ) {
+			if ( data.errors && data.errors.length ) {
+				showErrors( errorsEl, data.errors );
+				return;
+			}
+			renderPreview( textarea, pendingBlock, previewSection, data.wikitext );
+		} ).fail( function ( code, err ) {
+			showErrors( errorsEl, [ extractApiError( code, err ) ] );
+		} );
+	}
+
+	function renderPreview( textarea, pendingBlock, previewSection, wikitext ) {
+		api.post( {
+			action: 'parse',
+			text: wikitext,
+			title: mw.config.get( 'wgPageName' ),
+			prop: 'text',
+			disablelimitreport: 1,
+			contentmodel: 'wikitext',
+			formatversion: 2
+		} ).done( function ( data ) {
+			previewSection.innerHTML = '';
+			previewSection.hidden = false;
+
+			var renderedHeading = document.createElement( 'h4' );
+			renderedHeading.textContent = mw.msg( 'infothequecore-preview-heading' );
+			previewSection.appendChild( renderedHeading );
+
+			var rendered = document.createElement( 'div' );
+			rendered.className = 'ithc-preview-rendered';
+			rendered.innerHTML = data.parse.text;
+			previewSection.appendChild( rendered );
+
+			var wikitextHeading = document.createElement( 'h4' );
+			wikitextHeading.textContent = mw.msg( 'infothequecore-preview-wikitext-heading' );
+			previewSection.appendChild( wikitextHeading );
+
+			var raw = document.createElement( 'pre' );
+			raw.className = 'ithc-preview-wikitext';
+			raw.textContent = wikitext;
+			previewSection.appendChild( raw );
+
+			var insertBtn = document.createElement( 'button' );
+			insertBtn.type = 'button';
+			insertBtn.className = 'ithc-btn-primary';
+			insertBtn.textContent = mw.msg( 'infothequecore-insert-button' );
+			insertBtn.addEventListener( 'click', function () {
+				applyResult( textarea, pendingBlock, wikitext );
+				closeOverlay();
+			} );
+			previewSection.appendChild( insertBtn );
+		} ).fail( function () {
+			previewSection.hidden = false;
+			previewSection.textContent = mw.msg( 'infothequecore-preview-failed' );
+		} );
+	}
+
+	function applyResult( textarea, pendingBlock, wikitext ) {
 		if ( pendingBlock ) {
 			var current = textarea.value;
 			textarea.value = current.slice( 0, pendingBlock.start ) + wikitext + current.slice( pendingBlock.end + 1 );
@@ -169,9 +446,6 @@
 			var end = textarea.selectionEnd || 0;
 			textarea.value = textarea.value.slice( 0, start ) + wikitext + textarea.value.slice( end );
 		}
-
-		hasPendingRequest = false;
-		pendingBlock = null;
 		textarea.dispatchEvent( new Event( 'input', { bubbles: true } ) );
 		textarea.focus();
 	}

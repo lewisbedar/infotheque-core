@@ -63,5 +63,10 @@
 	"infothequecore-error-no-rows": "Add at least one row before continuing.",
 	"infothequecore-error-field-required": "Row $1: field \"$2\" is required.",
 
-	"infothequecore-editor-trigger": "+ Add an Infothèque table"
+	"infothequecore-editor-trigger": "+ Add an Infothèque table",
+	"infothequecore-add-row": "+ Add a row",
+	"infothequecore-remove-row": "Remove this row",
+	"infothequecore-loading-existing": "Reading the existing table…",
+	"infothequecore-insert-button": "Insert into the editor",
+	"infothequecore-preview-failed": "Preview failed. Please try again."
 }

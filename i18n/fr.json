@@ -63,5 +63,10 @@
 	"infothequecore-error-no-rows": "Ajoutez au moins une ligne avant de continuer.",
 	"infothequecore-error-field-required": "Ligne $1 : le champ « $2 » est obligatoire.",
 
-	"infothequecore-editor-trigger": "+ Ajouter un modèle Infothèque"
+	"infothequecore-editor-trigger": "+ Ajouter un modèle Infothèque",
+	"infothequecore-add-row": "+ Ajouter une ligne",
+	"infothequecore-remove-row": "Supprimer cette ligne",
+	"infothequecore-loading-existing": "Lecture du tableau existant…",
+	"infothequecore-insert-button": "Insérer dans l'éditeur",
+	"infothequecore-preview-failed": "La prévisualisation a échoué. Réessayez."
 }
