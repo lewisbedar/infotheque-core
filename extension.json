@@ -56,9 +56,13 @@
 				"infothequecore-editor-trigger"
 			],
 			"dependencies": [
-				"mediawiki.util"
+				"mediawiki.util",
+				"mediawiki.api"
 			]
 		}
+	},
+	"APIModules": {
+		"infothequecore": "MediaWiki\\Extension\\InfothequeCore\\Api\\ApiInfothequeCore"
 	},
 	"Hooks": {
 		"EditPage::showEditForm:initial": "MediaWiki\\Extension\\InfothequeCore\\Hooks::onEditPageShowEditFormInitial"
