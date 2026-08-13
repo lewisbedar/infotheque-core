@@ -1,0 +1,12 @@
+{
+	"@metadata": {},
+	"infothequecore": "Name of the special page and extension, shown in the UI and in [[Special:SpecialPages]].",
+	"infothequecore-desc": "{{desc}}",
+	"infothequecore-select-form-label": "Label for the content-type selector on Special:InfothequeCore.",
+	"infothequecore-select-form-help": "Help text shown under the content-type selector.",
+	"infothequecore-select-form-submit": "Submit button label on the content-type selector step.",
+	"infothequecore-form-telechargements-logiciels": "Option label: software/game downloads form.",
+	"infothequecore-form-manuels": "Option label: manuals & documentation form.",
+	"infothequecore-form-configurations": "Option label: configurations form.",
+	"infothequecore-form-pilotes": "Option label: drivers form."
+}

@@ -1,0 +1,16 @@
+{
+	"@metadata": {
+		"authors": [
+			"Lewis Bedar"
+		]
+	},
+	"infothequecore": "InfothèqueCore",
+	"infothequecore-desc": "Guided forms for structured Infothèque content (downloads, manuals, configurations, drivers)",
+	"infothequecore-select-form-label": "Content type",
+	"infothequecore-select-form-help": "Choose which kind of table you want to add or edit.",
+	"infothequecore-select-form-submit": "Continue",
+	"infothequecore-form-telechargements-logiciels": "Software / game downloads",
+	"infothequecore-form-manuels": "Manuals & documentation",
+	"infothequecore-form-configurations": "Configurations",
+	"infothequecore-form-pilotes": "Drivers"
+}

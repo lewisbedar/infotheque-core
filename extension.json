@@ -1,0 +1,43 @@
+{
+	"name": "InfothequeCore",
+	"version": "0.1.0",
+	"author": [
+		"Lewis Bedar"
+	],
+	"descriptionmsg": "infothequecore-desc",
+	"license-name": "MIT",
+	"type": "specialpage",
+	"requires": {
+		"MediaWiki": ">= 1.43.0"
+	},
+	"manifest_version": 2,
+	"AutoloadNamespaces": {
+		"MediaWiki\\Extension\\InfothequeCore\\": "src/"
+	},
+	"SpecialPages": {
+		"InfothequeCore": {
+			"class": "MediaWiki\\Extension\\InfothequeCore\\SpecialInfothequeCore"
+		}
+	},
+	"MessagesDirs": {
+		"InfothequeCore": [
+			"i18n"
+		]
+	},
+	"ResourceModules": {
+		"ext.infothequeCore.special": {
+			"localBasePath": "resources",
+			"remoteExtPath": "InfothequeCore/resources",
+			"scripts": [
+				"ext.infothequeCore.special.js"
+			],
+			"styles": [
+				"ext.infothequeCore.special.css"
+			],
+			"dependencies": [
+				"oojs-ui-core",
+				"oojs-ui-widgets"
+			]
+		}
+	}
+}
