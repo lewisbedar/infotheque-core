@@ -3,6 +3,7 @@
 namespace MediaWiki\Extension\InfothequeCore\Api;
 
 use ApiBase;
+use Wikimedia\ParamValidator\ParamValidator;
 
 /**
  * TEMPORARY minimal stub for bisecting a "Caught exception of type Error"
@@ -23,24 +24,24 @@ class ApiInfothequeCore extends ApiBase {
 	public function getAllowedParams() {
 		return [
 			'op' => [
-				ApiBase::PARAM_TYPE => [ 'generate', 'parseexisting' ],
-				ApiBase::PARAM_REQUIRED => true,
+				ParamValidator::PARAM_TYPE => [ 'generate', 'parseexisting' ],
+				ParamValidator::PARAM_REQUIRED => true,
 			],
 			'schema' => [
-				ApiBase::PARAM_TYPE => 'string',
-				ApiBase::PARAM_REQUIRED => true,
+				ParamValidator::PARAM_TYPE => 'string',
+				ParamValidator::PARAM_REQUIRED => true,
 			],
 			'title' => [
-				ApiBase::PARAM_TYPE => 'string',
-				ApiBase::PARAM_DEFAULT => '{}',
+				ParamValidator::PARAM_TYPE => 'string',
+				ParamValidator::PARAM_DEFAULT => '{}',
 			],
 			'rows' => [
-				ApiBase::PARAM_TYPE => 'string',
-				ApiBase::PARAM_DEFAULT => '[]',
+				ParamValidator::PARAM_TYPE => 'string',
+				ParamValidator::PARAM_DEFAULT => '[]',
 			],
 			'raw' => [
-				ApiBase::PARAM_TYPE => 'string',
-				ApiBase::PARAM_DEFAULT => '',
+				ParamValidator::PARAM_TYPE => 'string',
+				ParamValidator::PARAM_DEFAULT => '',
 			],
 		];
 	}
