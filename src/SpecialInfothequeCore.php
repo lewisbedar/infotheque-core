@@ -44,6 +44,16 @@ class SpecialInfothequeCore extends SpecialPage {
 		$this->requireNamedUser();
 		$this->getOutput()->addModules( 'ext.infothequeCore.special' );
 
+		$request = $this->getRequest();
+		if ( $request->getVal( 'ithcInsert', $request->getVal( 'insert', '' ) ) ) {
+			// Insert mode is meant to be embedded in the editor's own modal
+			// iframe (same origin); MediaWiki denies framing special pages by
+			// default (X-Frame-Options), so opt out for this mode only — the
+			// direct-visit "create a new page" flow keeps the protection,
+			// since that's the one that can actually write to the wiki.
+			$this->getOutput()->allowClickjacking();
+		}
+
 		if ( $subPage === null || $subPage === '' ) {
 			$this->showSelector();
 			return;
@@ -61,7 +71,6 @@ class SpecialInfothequeCore extends SpecialPage {
 		);
 
 		try {
-			$request = $this->getRequest();
 			if ( $request->wasPosted() && $request->getVal( 'ithcStage' ) === 'confirm' ) {
 				$this->handleConfirm( $schema );
 				return;

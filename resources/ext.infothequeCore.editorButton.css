@@ -3,7 +3,6 @@
    MediaWiki:Common.css). */
 
 .ithc-trigger-wrap {
-	position: relative;
 	margin: 0 0 10px 0;
 }
 
@@ -24,19 +23,19 @@
 }
 
 .ithc-dropdown {
-	position: absolute;
-	top: 100%;
-	left: 0;
-	z-index: 20;
 	display: flex;
 	flex-direction: column;
 	margin-top: 4px;
 	background: #ffffff;
 	border: 1px solid #c9ced6;
 	border-radius: 10px;
-	box-shadow: 0 4px 16px rgba( 0, 0, 0, 0.15 );
+	box-shadow: 0 2px 8px rgba( 0, 0, 0, 0.1 );
 	overflow: hidden;
-	min-width: 240px;
+	max-width: 320px;
+}
+
+.ithc-dropdown[hidden] {
+	display: none;
 }
 
 .ithc-dropdown-item {
