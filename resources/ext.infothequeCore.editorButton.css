@@ -1,14 +1,14 @@
-/* Buttons injected before #wpTextbox1 in source-mode editing, styled to
-   match the existing "+ Ajouter un téléchargement" gadget button
-   (.ith-dl-add-btn in MediaWiki:Common.css). */
+/* Trigger button + dropdown, styled to match the existing
+   "+ Ajouter un téléchargement" gadget button (.ith-dl-add-btn in
+   MediaWiki:Common.css). */
 
-.ithc-editor-buttons {
+.ithc-trigger-wrap {
+	position: relative;
 	margin: 0 0 10px 0;
 }
 
 .ithc-editor-btn {
 	display: inline-block;
-	margin: 0 8px 8px 0;
 	padding: 8px 14px;
 	border: 1px solid #b6c7f2;
 	border-radius: 10px;
@@ -21,4 +21,87 @@
 
 .ithc-editor-btn:hover {
 	background: #eef3ff;
+}
+
+.ithc-dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	margin-top: 4px;
+	background: #ffffff;
+	border: 1px solid #c9ced6;
+	border-radius: 10px;
+	box-shadow: 0 4px 16px rgba( 0, 0, 0, 0.15 );
+	overflow: hidden;
+	min-width: 240px;
+}
+
+.ithc-dropdown-item {
+	display: block;
+	width: 100%;
+	padding: 10px 14px;
+	border: none;
+	background: none;
+	text-align: left;
+	font-size: 0.9em;
+	cursor: pointer;
+	color: #1f2328;
+}
+
+.ithc-dropdown-item:hover {
+	background: #eef3ff;
+}
+
+.ithc-dropdown-item + .ithc-dropdown-item {
+	border-top: 1px solid #eaecf0;
+}
+
+/* Modal overlay hosting the assistant in an iframe, in the same window. */
+
+.ithc-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba( 0, 0, 0, 0.45 );
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+}
+
+.ithc-modal {
+	position: relative;
+	box-sizing: border-box;
+	width: 800px;
+	max-width: 95vw;
+	height: 85vh;
+	background: #ffffff;
+	border-radius: 12px;
+	box-shadow: 0 8px 30px rgba( 0, 0, 0, 0.3 );
+	overflow: hidden;
+}
+
+.ithc-modal-close {
+	position: absolute;
+	top: 6px;
+	right: 10px;
+	z-index: 1;
+	border: none;
+	background: none;
+	font-size: 22px;
+	line-height: 1;
+	cursor: pointer;
+	color: #54595d;
+}
+
+.ithc-modal-iframe {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border: 0;
 }

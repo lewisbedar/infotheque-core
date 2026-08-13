@@ -1,10 +1,12 @@
 /**
- * Adds a small row of buttons next to the source-mode edit textarea
- * (#wpTextbox1), one per assistant form. Each opens Special:InfothequeCore
- * as a popup and, on completion, splices the result into the textarea —
- * same DOM-injection/cursor-insertion pattern as the existing
- * "+ Ajouter un téléchargement" gadget (MediaWiki:Common.js), generalized
- * to all 4 forms and to full add/edit/delete of an existing table.
+ * Adds a single "Ajouter un modèle Infothèque" button next to the
+ * source-mode edit textarea (#wpTextbox1). Clicking it reveals a small
+ * column menu with the 4 assistant forms; picking one opens
+ * Special:InfothequeCore in a modal overlay (iframe) inside the same
+ * window/tab, and splices the result into the textarea on completion —
+ * same cursor-insertion pattern as the existing "+ Ajouter un
+ * téléchargement" gadget (MediaWiki:Common.js), generalized to all 4
+ * forms and to full add/edit/delete of an existing table.
  *
  * Detection of an "existing table to edit" is scoped to whichever
  * {{TemplateName...}} block (if any) the cursor is currently inside, not
@@ -23,16 +25,16 @@
 		{ id: 'pilotes', templateName: 'Pilotes', msgKey: 'infothequecore-form-pilotes' }
 	];
 
-	var activePopup = null;
 	var hasPendingRequest = false;
 	var pendingBlock = null;
+	var currentOverlay = null;
 
 	function init() {
 		var textarea = document.getElementById( 'wpTextbox1' );
 		if ( !textarea ) {
 			return; // not in source editing mode
 		}
-		addButtons( textarea );
+		addTrigger( textarea );
 		window.addEventListener( 'message', function ( event ) {
 			if (
 				event.origin !== location.origin ||
@@ -43,22 +45,47 @@
 				return;
 			}
 			applyResult( textarea, event.data.wikitext );
+			closeOverlay();
 		} );
 	}
 
-	function addButtons( textarea ) {
+	function addTrigger( textarea ) {
 		var wrap = document.createElement( 'div' );
-		wrap.className = 'ithc-editor-buttons';
+		wrap.className = 'ithc-trigger-wrap';
+
+		var trigger = document.createElement( 'button' );
+		trigger.type = 'button';
+		trigger.className = 'ithc-editor-btn';
+		trigger.textContent = mw.msg( 'infothequecore-editor-trigger' );
+
+		var dropdown = document.createElement( 'div' );
+		dropdown.className = 'ithc-dropdown';
+		dropdown.hidden = true;
+
 		SCHEMAS.forEach( function ( schema ) {
-			var btn = document.createElement( 'button' );
-			btn.type = 'button';
-			btn.className = 'ithc-editor-btn';
-			btn.textContent = '+ ' + mw.msg( schema.msgKey );
-			btn.addEventListener( 'click', function () {
+			var item = document.createElement( 'button' );
+			item.type = 'button';
+			item.className = 'ithc-dropdown-item';
+			item.textContent = mw.msg( schema.msgKey );
+			item.addEventListener( 'click', function () {
+				dropdown.hidden = true;
 				openAssistant( textarea, schema );
 			} );
-			wrap.appendChild( btn );
+			dropdown.appendChild( item );
 		} );
+
+		trigger.addEventListener( 'click', function ( e ) {
+			e.stopPropagation();
+			dropdown.hidden = !dropdown.hidden;
+		} );
+		document.addEventListener( 'click', function ( e ) {
+			if ( !wrap.contains( e.target ) ) {
+				dropdown.hidden = true;
+			}
+		} );
+
+		wrap.appendChild( trigger );
+		wrap.appendChild( dropdown );
 		textarea.parentNode.insertBefore( wrap, textarea );
 	}
 
@@ -96,9 +123,8 @@
 	}
 
 	function openAssistant( textarea, schema ) {
-		if ( activePopup && !activePopup.closed ) {
-			activePopup.focus();
-			return;
+		if ( currentOverlay ) {
+			return; // one at a time
 		}
 
 		var cursorPos = textarea.selectionStart || 0;
@@ -109,17 +135,53 @@
 			params.existing = block.raw;
 		}
 
-		activePopup = window.open(
-			mw.util.getUrl( 'Special:InfothequeCore/' + schema.id, params ),
-			'ithcInsert',
-			'width=760,height=800'
-		);
-		if ( !activePopup ) {
-			return; // popup blocked
-		}
-
 		hasPendingRequest = true;
 		pendingBlock = block ? { start: block.start, end: block.end } : null;
+
+		openOverlay( mw.util.getUrl( 'Special:InfothequeCore/' + schema.id, params ) );
+	}
+
+	function openOverlay( url ) {
+		var overlay = document.createElement( 'div' );
+		overlay.className = 'ithc-overlay';
+		overlay.addEventListener( 'click', function ( e ) {
+			if ( e.target === overlay ) {
+				cancelPending();
+			}
+		} );
+
+		var modal = document.createElement( 'div' );
+		modal.className = 'ithc-modal';
+
+		var closeBtn = document.createElement( 'button' );
+		closeBtn.type = 'button';
+		closeBtn.className = 'ithc-modal-close';
+		closeBtn.textContent = '×';
+		closeBtn.setAttribute( 'aria-label', mw.msg( 'infothequecore-editor-close' ) );
+		closeBtn.addEventListener( 'click', cancelPending );
+
+		var iframe = document.createElement( 'iframe' );
+		iframe.className = 'ithc-modal-iframe';
+		iframe.src = url;
+
+		modal.appendChild( closeBtn );
+		modal.appendChild( iframe );
+		overlay.appendChild( modal );
+		document.body.appendChild( overlay );
+		currentOverlay = overlay;
+	}
+
+	function cancelPending() {
+		hasPendingRequest = false;
+		pendingBlock = null;
+		closeOverlay();
+	}
+
+	function closeOverlay() {
+		if ( currentOverlay ) {
+			currentOverlay.remove();
+			currentOverlay = null;
+		}
 	}
 
 	function applyResult( textarea, wikitext ) {

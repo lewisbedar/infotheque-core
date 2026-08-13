@@ -52,7 +52,9 @@
 				"infothequecore-form-telechargements-logiciels",
 				"infothequecore-form-manuels",
 				"infothequecore-form-configurations",
-				"infothequecore-form-pilotes"
+				"infothequecore-form-pilotes",
+				"infothequecore-editor-trigger",
+				"infothequecore-editor-close"
 			],
 			"dependencies": [
 				"mediawiki.util"

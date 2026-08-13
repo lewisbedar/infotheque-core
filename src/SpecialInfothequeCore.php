@@ -60,13 +60,23 @@ class SpecialInfothequeCore extends SpecialPage {
 			Linker::link( $this->getPageTitle(), $this->msg( 'infothequecore-back-to-selector' )->text() )
 		);
 
-		$request = $this->getRequest();
-		if ( $request->wasPosted() && $request->getVal( 'ithcStage' ) === 'confirm' ) {
-			$this->handleConfirm( $schema );
-			return;
-		}
+		try {
+			$request = $this->getRequest();
+			if ( $request->wasPosted() && $request->getVal( 'ithcStage' ) === 'confirm' ) {
+				$this->handleConfirm( $schema );
+				return;
+			}
 
-		$this->showEditForm( $schema );
+			$this->showEditForm( $schema );
+		} catch ( \Throwable $e ) {
+			// Broad net around the whole dispatch (including HTMLForm's own
+			// processing, which runs outside the narrower try/catches below)
+			// so a fatal shows its class+message+location in the page instead
+			// of MediaWiki's opaque fatal-error page.
+			$this->getOutput()->addHTML( Html::errorBox( Html::element( 'pre', [],
+				get_class( $e ) . ': ' . $e->getMessage() . "\n" . $e->getFile() . ':' . $e->getLine()
+			) ) );
+		}
 	}
 
 	private function showSelector(): void {
