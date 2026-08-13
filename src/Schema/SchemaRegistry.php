@@ -247,10 +247,11 @@ class SchemaRegistry {
 					key: 'fichier',
 					widget: FieldWidget::File,
 					labelMsg: 'infothequecore-field-fichier-pilote',
-					helpMsg: 'infothequecore-field-fichier-pilote-help',
-					required: true
-					// No wikitextWrap: Pilotes takes the bare file name, unlike
-					// Téléchargements' format/image which need a full [[Fichier:]] link.
+					helpMsg: 'infothequecore-field-fichier-pilote-help'
+					// Not required: the live TemplateData only marks "nom" as
+					// required. No wikitextWrap either: Pilotes takes the bare
+					// file name, unlike Téléchargements' format/image which
+					// need a full [[Fichier:]] link.
 				),
 			],
 			rowKeyField: 'nom'
