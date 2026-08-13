@@ -20,6 +20,12 @@ class FieldDefinition {
 	 *   value is wrapped into before being written into the generated
 	 *   wikitext, e.g. turning a bare file name into "[[Fichier:%s|centré]]".
 	 *   Left null when the value is used verbatim.
+	 * @param bool $rawWikitext When true, the value is assumed to already be
+	 *   deliberate wikitext typed by the user (e.g. a list of [url text]
+	 *   download links) and is used as-is. Otherwise a bare "|" is escaped
+	 *   to "{{!}}", since it would otherwise be misread as a new template
+	 *   parameter separator (matches the escaping done by the existing
+	 *   "+ Ajouter un téléchargement" gadget).
 	 */
 	public function __construct(
 		public readonly string $key,
@@ -29,7 +35,8 @@ class FieldDefinition {
 		public readonly bool $required = false,
 		public readonly array $suggestedValues = [],
 		public readonly ?string $example = null,
-		public readonly ?string $wikitextWrap = null
+		public readonly ?string $wikitextWrap = null,
+		public readonly bool $rawWikitext = false
 	) {
 	}
 
@@ -45,6 +52,8 @@ class FieldDefinition {
 		}
 		if ( $this->widget === FieldWidget::File ) {
 			$value = preg_replace( '/^(Fichier|File)\s*:\s*/iu', '', $value );
+		} elseif ( !$this->rawWikitext ) {
+			$value = str_replace( '|', '{{!}}', $value );
 		}
 		if ( $this->wikitextWrap === null ) {
 			return $value;

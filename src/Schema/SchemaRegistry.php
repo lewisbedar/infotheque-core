@@ -87,7 +87,8 @@ class SchemaRegistry {
 					widget: FieldWidget::Textarea,
 					labelMsg: 'infothequecore-field-liens',
 					required: true,
-					helpMsg: 'infothequecore-field-liens-help'
+					helpMsg: 'infothequecore-field-liens-help',
+					rawWikitext: true
 				),
 			],
 			rowKeyField: 'edition'
@@ -146,7 +147,8 @@ class SchemaRegistry {
 					widget: FieldWidget::Textarea,
 					labelMsg: 'infothequecore-field-liens',
 					required: true,
-					helpMsg: 'infothequecore-field-liens-help'
+					helpMsg: 'infothequecore-field-liens-help',
+					rawWikitext: true
 				),
 			],
 			rowKeyField: 'edition'
