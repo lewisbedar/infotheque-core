@@ -53,8 +53,7 @@
 				"infothequecore-form-manuels",
 				"infothequecore-form-configurations",
 				"infothequecore-form-pilotes",
-				"infothequecore-editor-trigger",
-				"infothequecore-editor-close"
+				"infothequecore-editor-trigger"
 			],
 			"dependencies": [
 				"mediawiki.util"

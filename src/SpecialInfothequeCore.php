@@ -63,22 +63,6 @@ class SpecialInfothequeCore extends SpecialPage {
 		);
 
 		try {
-			if ( $request->getVal( 'ithcInsert', $request->getVal( 'insert', '' ) ) ) {
-				// Insert mode is meant to be embedded in the editor's own modal
-				// iframe (same origin); MediaWiki denies framing special pages
-				// by default (X-Frame-Options), so opt out for this mode only
-				// — the direct-visit "create a new page" flow keeps the
-				// protection, since that's the one that can actually write to
-				// the wiki. Guarded defensively: this is inside the broad
-				// try/catch below in case the method doesn't exist on this
-				// MediaWiki version, so a failure here still shows a readable
-				// error instead of an opaque fatal.
-				$out = $this->getOutput();
-				if ( method_exists( $out, 'allowClickjacking' ) ) {
-					$out->allowClickjacking();
-				}
-			}
-
 			if ( $request->wasPosted() && $request->getVal( 'ithcStage' ) === 'confirm' ) {
 				$this->handleConfirm( $schema );
 				return;

@@ -64,6 +64,5 @@
 	"infothequecore-insert-button": "Button label on the preview step in insert mode, in place of infothequecore-publish-button. Purely client-side: sends the wikitext back to the opener window via postMessage.",
 	"infothequecore-insert-hint": "Reassurance text shown under infothequecore-insert-button, explaining that nothing is saved to the wiki until the user saves the page themselves.",
 
-	"infothequecore-editor-trigger": "Label of the single trigger button injected in the source editor, which opens a dropdown of the 4 assistant forms.",
-	"infothequecore-editor-close": "Accessible label (aria-label) for the × close button on the editor's modal overlay."
+	"infothequecore-editor-trigger": "Label of the single trigger button injected in the source editor, which opens a dropdown of the 4 assistant forms."
 }

@@ -2,11 +2,14 @@
  * Adds a single "Ajouter un modèle Infothèque" button next to the
  * source-mode edit textarea (#wpTextbox1). Clicking it reveals a small
  * column menu with the 4 assistant forms; picking one opens
- * Special:InfothequeCore in a modal overlay (iframe) inside the same
- * window/tab, and splices the result into the textarea on completion —
- * same cursor-insertion pattern as the existing "+ Ajouter un
- * téléchargement" gadget (MediaWiki:Common.js), generalized to all 4
- * forms and to full add/edit/delete of an existing table.
+ * Special:InfothequeCore as a popup window (window.open — MediaWiki sends
+ * X-Frame-Options: deny wiki-wide, likely at the nginx level, which rules
+ * out embedding it in an <iframe> in the same window; window.open() isn't
+ * affected since that header only restricts framing), and splices the
+ * result into the textarea on completion — same cursor-insertion pattern
+ * as the existing "+ Ajouter un téléchargement" gadget
+ * (MediaWiki:Common.js), generalized to all 4 forms and to full
+ * add/edit/delete of an existing table.
  *
  * Detection of an "existing table to edit" is scoped to whichever
  * {{TemplateName...}} block (if any) the cursor is currently inside, not
@@ -27,7 +30,7 @@
 
 	var hasPendingRequest = false;
 	var pendingBlock = null;
-	var currentOverlay = null;
+	var activePopup = null;
 
 	function init() {
 		var textarea = document.getElementById( 'wpTextbox1' );
@@ -45,7 +48,6 @@
 				return;
 			}
 			applyResult( textarea, event.data.wikitext );
-			closeOverlay();
 		} );
 	}
 
@@ -132,8 +134,9 @@
 	}
 
 	function openAssistant( textarea, schema ) {
-		if ( currentOverlay ) {
-			return; // one at a time
+		if ( activePopup && !activePopup.closed ) {
+			activePopup.focus();
+			return;
 		}
 
 		var cursorPos = textarea.selectionStart || 0;
@@ -144,53 +147,17 @@
 			params.existing = block.raw;
 		}
 
+		activePopup = window.open(
+			mw.util.getUrl( 'Special:InfothequeCore/' + schema.id, params ),
+			'ithcInsert',
+			'width=760,height=800'
+		);
+		if ( !activePopup ) {
+			return; // popup blocked
+		}
+
 		hasPendingRequest = true;
 		pendingBlock = block ? { start: block.start, end: block.end } : null;
-
-		openOverlay( mw.util.getUrl( 'Special:InfothequeCore/' + schema.id, params ) );
-	}
-
-	function openOverlay( url ) {
-		var overlay = document.createElement( 'div' );
-		overlay.className = 'ithc-overlay';
-		overlay.addEventListener( 'click', function ( e ) {
-			if ( e.target === overlay ) {
-				cancelPending();
-			}
-		} );
-
-		var modal = document.createElement( 'div' );
-		modal.className = 'ithc-modal';
-
-		var closeBtn = document.createElement( 'button' );
-		closeBtn.type = 'button';
-		closeBtn.className = 'ithc-modal-close';
-		closeBtn.textContent = '×';
-		closeBtn.setAttribute( 'aria-label', mw.msg( 'infothequecore-editor-close' ) );
-		closeBtn.addEventListener( 'click', cancelPending );
-
-		var iframe = document.createElement( 'iframe' );
-		iframe.className = 'ithc-modal-iframe';
-		iframe.src = url;
-
-		modal.appendChild( closeBtn );
-		modal.appendChild( iframe );
-		overlay.appendChild( modal );
-		document.body.appendChild( overlay );
-		currentOverlay = overlay;
-	}
-
-	function cancelPending() {
-		hasPendingRequest = false;
-		pendingBlock = null;
-		closeOverlay();
-	}
-
-	function closeOverlay() {
-		if ( currentOverlay ) {
-			currentOverlay.remove();
-			currentOverlay = null;
-		}
 	}
 
 	function applyResult( textarea, wikitext ) {

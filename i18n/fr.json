@@ -68,6 +68,5 @@
 	"infothequecore-insert-button": "Insérer dans l'éditeur",
 	"infothequecore-insert-hint": "Rien n'est encore enregistré sur le wiki : cette fenêtre va se fermer et le résultat sera placé dans l'éditeur. Vérifiez puis enregistrez la page vous-même.",
 
-	"infothequecore-editor-trigger": "+ Ajouter un modèle Infothèque",
-	"infothequecore-editor-close": "Fermer"
+	"infothequecore-editor-trigger": "+ Ajouter un modèle Infothèque"
 }
