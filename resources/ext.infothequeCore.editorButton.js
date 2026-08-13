@@ -31,6 +31,22 @@
 	'use strict';
 
 	var SCHEMA_IDS = [ 'telechargements-logiciels', 'manuels', 'configurations', 'pilotes' ];
+	// Relative column widths (%) for known fields — gives more room to
+	// "édition" and less to short fields like "version"/"langue". Anything
+	// not listed (other schemas, for now) falls back to an even share.
+	var COLUMN_WIDTHS = {
+		edition: 16,
+		version: 7,
+		langue: 7,
+		description: 20,
+		serial: 9,
+		format: 9,
+		image: 11,
+		liens: 15
+	};
+	var DEFAULT_COLUMN_WIDTH = 12;
+	var ACTIONS_COLUMN_WIDTH = 6;
+
 	var api = new mw.Api();
 	var currentOverlay = null;
 	var fieldIdCounter = 0;
@@ -70,7 +86,7 @@
 			var item = document.createElement( 'button' );
 			item.type = 'button';
 			item.className = 'ithc-dropdown-item';
-			item.textContent = schema.label;
+			item.textContent = schemaDisplayLabel( schema );
 			item.addEventListener( 'click', function () {
 				dropdown.hidden = true;
 				openAssistant( textarea, schema );
@@ -117,6 +133,11 @@
 			}
 		}
 		return -1;
+	}
+
+	/** "Téléchargements : Windows 95" — makes clear which page a form applies to. */
+	function schemaDisplayLabel( schema ) {
+		return schema.label + ' : ' + mw.config.get( 'wgPageName' ).replace( /_/g, ' ' );
 	}
 
 	/** Finds the {{templateName...}} call, among possibly several, that contains cursorPos. */
@@ -204,7 +225,7 @@
 		modal.appendChild( closeBtn );
 
 		var heading = document.createElement( 'h3' );
-		heading.textContent = schema.label;
+		heading.textContent = schemaDisplayLabel( schema );
 		modal.appendChild( heading );
 
 		if ( options.loading ) {
@@ -228,6 +249,7 @@
 		tableWrap.className = 'ithc-rows-table-wrap';
 		var table = document.createElement( 'table' );
 		table.className = 'ithc-rows-table';
+		table.appendChild( buildColgroup( schema ) );
 		table.appendChild( buildTableHead( schema ) );
 		var tbody = document.createElement( 'tbody' );
 		rowsValues.forEach( function ( rowVals ) {
@@ -277,6 +299,19 @@
 
 	// ---- Row construction: fields + lock/edit + reorder + remove ------------
 
+	function buildColgroup( schema ) {
+		var colgroup = document.createElement( 'colgroup' );
+		schema.rowFields.forEach( function ( field ) {
+			var col = document.createElement( 'col' );
+			col.style.width = ( COLUMN_WIDTHS[ field.key ] || DEFAULT_COLUMN_WIDTH ) + '%';
+			colgroup.appendChild( col );
+		} );
+		var actionsCol = document.createElement( 'col' );
+		actionsCol.style.width = ACTIONS_COLUMN_WIDTH + '%';
+		colgroup.appendChild( actionsCol );
+		return colgroup;
+	}
+
 	function buildTableHead( schema ) {
 		var thead = document.createElement( 'thead' );
 		var tr = document.createElement( 'tr' );
@@ -300,6 +335,7 @@
 		var fieldEls = [];
 		schema.rowFields.forEach( function ( field ) {
 			var td = document.createElement( 'td' );
+			td.className = 'ithc-col-' + field.key;
 			fieldEls.push( renderFieldValue( field, rowValues ? rowValues[ field.key ] : '', td ) );
 			tr.appendChild( td );
 		} );
@@ -574,13 +610,33 @@
 		button.addEventListener( 'click', function ( e ) {
 			e.stopPropagation();
 			if ( panel.hidden ) {
-				var rect = button.getBoundingClientRect();
-				panel.style.top = ( rect.bottom + window.scrollY ) + 'px';
-				panel.style.left = ( rect.left + window.scrollX ) + 'px';
-				panel.style.minWidth = rect.width + 'px';
+				panel.hidden = false;
+				positionPanel();
+			} else {
+				panel.hidden = true;
 			}
-			panel.hidden = !panel.hidden;
 		} );
+
+		/**
+		 * Opens below the button by default; if there isn't enough room
+		 * before the viewport bottom (common for rows near the bottom of a
+		 * tall, scrolled overlay) but there IS enough above, opens upward
+		 * instead — otherwise the panel could render past the visible
+		 * screen. Horizontally clamped so it doesn't overflow the right edge.
+		 */
+		function positionPanel() {
+			var rect = button.getBoundingClientRect();
+			var panelRect = panel.getBoundingClientRect();
+			var spaceBelow = window.innerHeight - rect.bottom;
+			var top = rect.bottom + 2;
+			if ( spaceBelow < panelRect.height + 8 && rect.top - panelRect.height - 8 > 0 ) {
+				top = rect.top - panelRect.height - 2;
+			}
+			var left = Math.min( rect.left, window.innerWidth - panelRect.width - 8 );
+			panel.style.top = ( top + window.scrollY ) + 'px';
+			panel.style.left = ( Math.max( left, 8 ) + window.scrollX ) + 'px';
+			panel.style.minWidth = rect.width + 'px';
+		}
 		document.addEventListener( 'click', function ( e ) {
 			if ( e.target !== button && !panel.contains( e.target ) ) {
 				panel.hidden = true;

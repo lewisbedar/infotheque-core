@@ -140,6 +140,14 @@
 	font-family: inherit;
 }
 
+/* The [hidden] attribute's UA default (display:none) gets overridden by
+   any of our own "display" rules unless we restore it explicitly — bit
+   us once already on the trigger dropdown, applies to any hideable
+   element sharing .ithc-field-input (e.g. the Select "autre" field). */
+.ithc-field-input[hidden] {
+	display: none;
+}
+
 .ithc-field-help {
 	margin: 4px 0 0 0;
 	font-size: 0.82em;
@@ -158,14 +166,16 @@
 
 .ithc-rows-table {
 	width: 100%;
+	table-layout: fixed;
 	border-collapse: collapse;
 }
 
 .ithc-rows-table th,
 .ithc-rows-table td {
 	border: 1px solid #a2a9b1;
-	padding: 3px;
+	padding: 0;
 	vertical-align: top;
+	overflow: hidden;
 }
 
 .ithc-rows-table th {
@@ -174,20 +184,45 @@
 	font-size: 0.82em;
 	text-align: left;
 	white-space: nowrap;
+	overflow: visible;
 	padding: 6px 8px;
 }
 
-/* Inputs fill the cell edge-to-edge instead of sitting cramped inside
-   extra cell padding, so the visible typing area matches the column
-   width as closely as possible. */
+/* Spreadsheet-like cells: the input itself IS the cell (no border, no
+   extra padding around it) instead of a smaller boxed field sitting
+   inside a padded cell. A focus ring stands in for the border, so the
+   active cell is still clearly visible. */
 .ithc-rows-table .ithc-field-input {
-	min-width: 11em;
+	width: 100%;
+	height: 100%;
+	min-width: 0;
 	margin: 0;
-	border-radius: 4px;
+	padding: 6px 8px;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	box-sizing: border-box;
+}
+
+.ithc-rows-table .ithc-field-input:focus {
+	outline: none;
+	box-shadow: inset 0 0 0 2px #36c;
+	background: #f5f8ff;
 }
 
 .ithc-rows-table textarea.ithc-field-input {
-	min-width: 16em;
+	resize: vertical;
+}
+
+/* Composite widgets (select/multiselect/links/file) keep a little
+   breathing room instead of going fully edge-to-edge, since they hold
+   more than a single line of raw text. */
+.ithc-rows-table .ithc-select-wrap,
+.ithc-rows-table .ithc-multiselect-wrap,
+.ithc-rows-table .ithc-links-wrap,
+.ithc-rows-table .ithc-file-wrap {
+	display: block;
+	padding: 4px;
 }
 
 .ithc-row-actions-cell {
