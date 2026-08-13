@@ -59,9 +59,9 @@ class SchemaRegistry {
 				),
 				new FieldDefinition(
 					key: 'langue',
-					widget: FieldWidget::Combobox,
+					widget: FieldWidget::MultiSelect,
 					labelMsg: 'infothequecore-field-langue',
-					suggestedValues: [ 'Français', 'Anglais', 'Multilingue' ]
+					suggestedValues: [ 'Français', 'Anglais', 'Allemand', 'Espagnol', 'Italien' ]
 				),
 				new FieldDefinition(
 					key: 'description',
@@ -70,11 +70,19 @@ class SchemaRegistry {
 					helpMsg: 'infothequecore-field-description-help'
 				),
 				new FieldDefinition(
+					key: 'serial',
+					widget: FieldWidget::Textarea,
+					labelMsg: 'infothequecore-field-serial',
+					helpMsg: 'infothequecore-field-serial-help',
+					mergeIntoKey: 'description',
+					lineWrap: '<div class="ith-dl-serialbox">%s</div>'
+				),
+				new FieldDefinition(
 					key: 'format',
-					widget: FieldWidget::File,
+					widget: FieldWidget::Select,
 					labelMsg: 'infothequecore-field-format-media',
 					helpMsg: 'infothequecore-field-format-media-help',
-					wikitextWrap: '[[Fichier:%s|centré]]'
+					options: self::supportOptions()
 				),
 				new FieldDefinition(
 					key: 'image',
@@ -84,15 +92,56 @@ class SchemaRegistry {
 				),
 				new FieldDefinition(
 					key: 'liens',
-					widget: FieldWidget::Textarea,
+					widget: FieldWidget::Links,
 					labelMsg: 'infothequecore-field-liens',
 					required: true,
-					helpMsg: 'infothequecore-field-liens-help',
-					rawWikitext: true
+					helpMsg: 'infothequecore-field-liens-help'
 				),
 			],
 			rowKeyField: 'edition'
 		);
+	}
+
+	/**
+	 * Support icons, mirroring the existing "+ Ajouter un téléchargement"
+	 * gadget's ITH_DL_FORMATS table (MediaWiki:Common.js) so both stay
+	 * visually consistent.
+	 *
+	 * @return list<array{key:string,label:string,wikitext:string}>
+	 */
+	private static function supportOptions(): array {
+		return [
+			[
+				'key' => 'disquette',
+				'label' => 'Disquette',
+				'wikitext' => '[[Fichier:Icône disquettes.png|centré]]',
+			],
+			[
+				'key' => 'disquette2',
+				'label' => 'Disquette (variante)',
+				'wikitext' => '[[Fichier:Setupapi.dll 14 105.png|centré|sans_cadre]]',
+			],
+			[
+				'key' => 'cd',
+				'label' => 'CD-ROM / DVD',
+				'wikitext' => '[[Fichier:Icone CD.png|centré|sans_cadre]]',
+			],
+			[
+				'key' => 'cddisquette',
+				'label' => 'CD + disquettes',
+				'wikitext' => '[[Fichier:Mmcndmgr.dll 14 30548-1.png|centré|sans_cadre]]',
+			],
+			[
+				'key' => 'zip',
+				'label' => 'Fichier ZIP / téléchargement numérique',
+				'wikitext' => '[[Fichier:Zipfldr.dll 14 123-3.png|centré|sans_cadre]]',
+			],
+			[
+				'key' => 'installateur',
+				'label' => 'Installateur (.exe)',
+				'wikitext' => '[[Fichier:Netsetup.exe 14 3000-0.png|centré|sans_cadre]]',
+			],
+		];
 	}
 
 	private static function manuels(): FormSchema {

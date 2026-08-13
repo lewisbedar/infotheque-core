@@ -40,6 +40,12 @@ class SchemaExporter {
 			'required' => $field->required,
 			'suggestedValues' => $field->suggestedValues,
 			'example' => $field->example,
+			// Select only; strip the server-only "wikitext" value, the
+			// client just needs key+label to build <option> elements.
+			'options' => array_map(
+				static fn ( array $o ): array => [ 'key' => $o['key'], 'label' => $o['label'] ],
+				$field->options
+			),
 		];
 	}
 
@@ -51,6 +57,12 @@ class SchemaExporter {
 				return 'combobox';
 			case FieldWidget::File:
 				return 'file';
+			case FieldWidget::Select:
+				return 'select';
+			case FieldWidget::MultiSelect:
+				return 'multiselect';
+			case FieldWidget::Links:
+				return 'links';
 			case FieldWidget::Text:
 			default:
 				return 'text';

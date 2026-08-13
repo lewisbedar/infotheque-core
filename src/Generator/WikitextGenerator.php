@@ -67,12 +67,32 @@ class WikitextGenerator {
 		$rows = [];
 		foreach ( $this->usedRows( $schema, $rowsValues ) as $rawRow ) {
 			$row = [];
+			// Two passes: regular fields first, then fields that fold their
+			// value into another field's slot (e.g. a serial-number field
+			// merged into "description") — the target's own value must
+			// already be in $row before appending to it.
 			foreach ( $schema->rowFields as $field ) {
+				if ( $field->mergeIntoKey !== null ) {
+					continue;
+				}
 				$value = trim( $rawRow[ $field->key ] ?? '' );
 				if ( $value === '' ) {
 					continue;
 				}
 				$row[ $field->key ] = $field->toWikitext( $value );
+			}
+			foreach ( $schema->rowFields as $field ) {
+				if ( $field->mergeIntoKey === null ) {
+					continue;
+				}
+				$value = trim( $rawRow[ $field->key ] ?? '' );
+				if ( $value === '' ) {
+					continue;
+				}
+				$merged = $field->toWikitext( $value );
+				$row[ $field->mergeIntoKey ] = isset( $row[ $field->mergeIntoKey ] )
+					? $row[ $field->mergeIntoKey ] . $merged
+					: $merged;
 			}
 			$rows[] = $row;
 		}

@@ -54,7 +54,17 @@
 				"infothequecore-remove-row",
 				"infothequecore-loading-existing",
 				"infothequecore-insert-button",
-				"infothequecore-cancel-button"
+				"infothequecore-cancel-button",
+				"infothequecore-edit-row",
+				"infothequecore-move-row-up",
+				"infothequecore-move-row-down",
+				"infothequecore-select-custom",
+				"infothequecore-select-custom-placeholder",
+				"infothequecore-links-add",
+				"infothequecore-links-url-placeholder",
+				"infothequecore-links-label-placeholder",
+				"infothequecore-links-remove",
+				"infothequecore-photo-browse-placeholder"
 			],
 			"dependencies": [
 				"mediawiki.util",

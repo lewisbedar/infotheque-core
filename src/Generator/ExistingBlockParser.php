@@ -65,8 +65,57 @@ class ExistingBlockParser {
 			}
 		}
 
+		$this->extractMergedFields( $schema, $rowsByNumber );
+
 		ksort( $rowsByNumber );
 		return [ 'title' => $title, 'rows' => array_values( $rowsByNumber ) ];
+	}
+
+	/**
+	 * Fields with $mergeIntoKey don't have their own "|key{n}=" param — on
+	 * generation their value gets folded into another field's value (e.g. a
+	 * serial-number field appended into "description"). To pre-fill them
+	 * back out, pull out the segments matching their $lineWrap template from
+	 * the target field's already-reverse-transformed value.
+	 *
+	 * @param FormSchema $schema
+	 * @param array<int,array<string,string>> &$rowsByNumber
+	 */
+	private function extractMergedFields( FormSchema $schema, array &$rowsByNumber ): void {
+		foreach ( $schema->rowFields as $field ) {
+			if ( $field->mergeIntoKey === null || $field->lineWrap === null ) {
+				continue;
+			}
+			foreach ( $rowsByNumber as $rowNumber => $row ) {
+				if ( !isset( $row[ $field->mergeIntoKey ] ) ) {
+					continue;
+				}
+				[ $extracted, $remaining ] = $this->extractWrapped( $row[ $field->mergeIntoKey ], $field->lineWrap );
+				if ( $extracted !== '' ) {
+					$rowsByNumber[ $rowNumber ][ $field->key ] = $extracted;
+				}
+				$rowsByNumber[ $rowNumber ][ $field->mergeIntoKey ] = $remaining;
+			}
+		}
+	}
+
+	/**
+	 * @param string $value
+	 * @param string $template sprintf template with exactly one "%s".
+	 * @return array{0: string, 1: string} Extracted lines (newline-joined)
+	 *   and the remainder of $value with those segments removed.
+	 */
+	private function extractWrapped( string $value, string $template ): array {
+		$parts = explode( '%s', $template, 2 );
+		$pattern = '/' . preg_quote( $parts[0], '/' ) . '(.*?)' . preg_quote( $parts[1] ?? '', '/' ) . '/su';
+
+		$extracted = [];
+		if ( preg_match_all( $pattern, $value, $matches ) ) {
+			$extracted = $matches[1];
+			$value = preg_replace( $pattern, '', $value );
+		}
+
+		return [ trim( implode( "\n", $extracted ) ), trim( $value ) ];
 	}
 
 	private function reverseTransform( FieldDefinition $field, string $value ): string {
@@ -76,9 +125,35 @@ class ExistingBlockParser {
 			}
 			return preg_replace( '/^(Fichier|File)\s*:\s*/iu', '', $value );
 		}
+
+		if ( $field->widget === FieldWidget::Select ) {
+			foreach ( $field->options as $option ) {
+				if ( $option['wikitext'] === $value ) {
+					return $option['key'];
+				}
+			}
+			return $value; // no match: keep as the "autre" custom wikitext
+		}
+
+		if ( $field->widget === FieldWidget::Links ) {
+			return $this->parseLinksToJson( $value );
+		}
+
 		if ( $field->rawWikitext ) {
 			return $value;
 		}
 		return str_replace( '{{!}}', '|', $value );
+	}
+
+	/** Reverse of FieldDefinition::buildLinksWikitext(): "[url label]" lines (bulleted or not) → JSON. */
+	private function parseLinksToJson( string $value ): string {
+		$links = [];
+		foreach ( preg_split( '/\r?\n/', $value ) as $line ) {
+			$line = preg_replace( '/^\*\s*/', '', trim( $line ) );
+			if ( preg_match( '/^\[(\S+)\s+(.*)\]$/', $line, $m ) ) {
+				$links[] = [ 'url' => $m[1], 'label' => $m[2] ];
+			}
+		}
+		return json_encode( $links, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 	}
 }
