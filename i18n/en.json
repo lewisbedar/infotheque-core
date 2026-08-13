@@ -68,5 +68,5 @@
 	"infothequecore-remove-row": "Remove this row",
 	"infothequecore-loading-existing": "Reading the existing table…",
 	"infothequecore-insert-button": "Insert into the editor",
-	"infothequecore-preview-failed": "Preview failed. Please try again."
+	"infothequecore-cancel-button": "Cancel"
 }

@@ -68,5 +68,5 @@
 	"infothequecore-remove-row": "Supprimer cette ligne",
 	"infothequecore-loading-existing": "Lecture du tableau existant…",
 	"infothequecore-insert-button": "Insérer dans l'éditeur",
-	"infothequecore-preview-failed": "La prévisualisation a échoué. Réessayez."
+	"infothequecore-cancel-button": "Annuler"
 }

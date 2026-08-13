@@ -76,8 +76,8 @@
 .ithc-form-modal {
 	position: relative;
 	box-sizing: border-box;
-	width: 640px;
-	max-width: 92vw;
+	width: 900px;
+	max-width: 95vw;
 	max-height: 88vh;
 	overflow-y: auto;
 	background: #ffffff;
@@ -147,25 +147,49 @@
 	color: #767f8c;
 }
 
-.ithc-rows {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
+/* Row table — deliberately styled like MediaWiki's own .wikitable (light
+   grey header, bordered cells) so the form already looks like the table
+   it will produce, instead of a separate technical preview. */
+
+.ithc-rows-table-wrap {
+	overflow-x: auto;
 	margin-bottom: 10px;
 }
 
-.ithc-row {
-	position: relative;
-	border: 1px solid #eaecf0;
-	border-radius: 10px;
-	padding: 14px 36px 4px 14px;
-	background: #fafbfc;
+.ithc-rows-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.ithc-rows-table th,
+.ithc-rows-table td {
+	border: 1px solid #a2a9b1;
+	padding: 6px 8px;
+	vertical-align: top;
+}
+
+.ithc-rows-table th {
+	background: #eaecf0;
+	font-weight: 700;
+	font-size: 0.82em;
+	text-align: left;
+	white-space: nowrap;
+}
+
+.ithc-rows-table .ithc-field-input {
+	min-width: 8em;
+}
+
+.ithc-rows-table textarea.ithc-field-input {
+	min-width: 12em;
+}
+
+.ithc-row-remove-cell {
+	width: 1%;
+	text-align: center;
 }
 
 .ithc-row-remove {
-	position: absolute;
-	top: 8px;
-	right: 10px;
 	border: none;
 	background: none;
 	font-size: 18px;
@@ -179,7 +203,8 @@
 }
 
 .ithc-add-row-btn,
-.ithc-btn-primary {
+.ithc-btn-primary,
+.ithc-btn-secondary {
 	padding: 8px 16px;
 	border-radius: 10px;
 	font-weight: 700;
@@ -191,7 +216,8 @@
 }
 
 .ithc-add-row-btn:hover,
-.ithc-btn-primary:hover {
+.ithc-btn-primary:hover,
+.ithc-btn-secondary:hover {
 	background: #eef3ff;
 }
 
@@ -203,6 +229,11 @@
 
 .ithc-btn-primary:hover {
 	background: #2a4b8d;
+}
+
+.ithc-btn-primary:disabled {
+	opacity: 0.6;
+	cursor: default;
 }
 
 .ithc-form-errors {
@@ -217,24 +248,7 @@
 
 .ithc-form-actions {
 	margin-top: 14px;
-}
-
-.ithc-preview-rendered {
-	border: 1px solid #a2a9b1;
-	border-radius: 8px;
-	padding: 1em;
-	margin-bottom: 1em;
-	overflow-x: auto;
-}
-
-.ithc-preview-wikitext {
-	white-space: pre-wrap;
-	word-break: break-word;
-	background: #f8f9fa;
-	border: 1px solid #a2a9b1;
-	border-radius: 8px;
-	padding: 1em;
-	max-width: 100%;
-	overflow-x: auto;
-	margin-bottom: 1em;
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
 }

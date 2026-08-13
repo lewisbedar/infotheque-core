@@ -53,11 +53,8 @@
 				"infothequecore-add-row",
 				"infothequecore-remove-row",
 				"infothequecore-loading-existing",
-				"infothequecore-preview-button",
-				"infothequecore-preview-heading",
-				"infothequecore-preview-wikitext-heading",
 				"infothequecore-insert-button",
-				"infothequecore-preview-failed"
+				"infothequecore-cancel-button"
 			],
 			"dependencies": [
 				"mediawiki.util",

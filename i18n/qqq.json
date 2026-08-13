@@ -63,6 +63,6 @@
 	"infothequecore-add-row": "Button label to add another dynamic row in the JS overlay form.",
 	"infothequecore-remove-row": "Title/tooltip of the per-row × remove button in the JS overlay form.",
 	"infothequecore-loading-existing": "Shown in the overlay while an existing block found under the cursor is being parsed via the API.",
-	"infothequecore-insert-button": "Button label after a successful preview in the JS overlay, splicing the result into the editor textarea client-side.",
-	"infothequecore-preview-failed": "Shown in the overlay if the action=parse API call for the rendered preview fails."
+	"infothequecore-insert-button": "Main action button in the JS overlay: validates+generates via the API, then on success splices the result into the editor textarea client-side, in one click (no separate preview step).",
+	"infothequecore-cancel-button": "Button label to close the overlay in the JS form without inserting anything."
 }
