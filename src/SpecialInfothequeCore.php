@@ -175,7 +175,18 @@ class SpecialInfothequeCore extends SpecialPage {
 				static fn ( $m ) => $m->severity === 'error'
 			);
 			if ( $errors !== [] ) {
-				return array_map( static fn ( $m ) => $m->text, $errors );
+				$messages = array_map( static fn ( $m ) => $m->text, $errors );
+				// TEMPORARY diagnostic to see exactly what the server received,
+				// instead of guessing again — remove once the root cause of
+				// the "field required" false positive is found.
+				$relevant = array_filter(
+					$data,
+					static fn ( $k ) => str_starts_with( $k, 'row1_' )
+						|| in_array( $k, [ 'ithcInsert', 'ithcPage', 'targetPage' ], true ),
+					ARRAY_FILTER_USE_KEY
+				);
+				$messages[] = 'DEBUG: ' . var_export( $relevant, true );
+				return $messages;
 			}
 			$this->renderPreview( $schema, $data );
 			return true;
