@@ -109,6 +109,20 @@ class SpecialInfothequeCore extends SpecialPage {
 		$insertMode = (bool)$request->getVal( 'ithcInsert', $request->getVal( 'insert', '' ) );
 		$pageParam = $request->getVal( 'ithcPage', $request->getVal( 'page', '' ) );
 
+		// TEMPORARY diagnostic, shown on every load (not just on error) since
+		// the previous diagnostic never even printed — meaning HTMLForm's own
+		// built-in validation is rejecting the submission before our
+		// callback runs, most likely because insertMode is somehow false on
+		// the POST-back. Remove once the cause is found.
+		$this->getOutput()->addHTML( Html::element( 'pre', [ 'style' => 'background:#fffbe6;border:1px solid #d4c700' ],
+			'DEBUG insertMode=' . var_export( $insertMode, true )
+			. ' wasPosted=' . var_export( $request->wasPosted(), true )
+			. ' ithcInsert=' . var_export( $request->getVal( 'ithcInsert' ), true )
+			. ' insert=' . var_export( $request->getVal( 'insert' ), true )
+			. ' ithcPage=' . var_export( $request->getVal( 'ithcPage' ), true )
+			. ' page=' . var_export( $request->getVal( 'page' ), true )
+		) );
+
 		$existing = null;
 		if ( $insertMode ) {
 			$rawExisting = $request->getVal( 'existing', '' );
