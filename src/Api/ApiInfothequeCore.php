@@ -21,7 +21,28 @@ class ApiInfothequeCore extends ApiBase {
 
 	/** @inheritDoc */
 	public function getAllowedParams() {
-		return [];
+		return [
+			'op' => [
+				ApiBase::PARAM_TYPE => [ 'generate', 'parseexisting' ],
+				ApiBase::PARAM_REQUIRED => true,
+			],
+			'schema' => [
+				ApiBase::PARAM_TYPE => 'string',
+				ApiBase::PARAM_REQUIRED => true,
+			],
+			'title' => [
+				ApiBase::PARAM_TYPE => 'string',
+				ApiBase::PARAM_DEFAULT => '{}',
+			],
+			'rows' => [
+				ApiBase::PARAM_TYPE => 'string',
+				ApiBase::PARAM_DEFAULT => '[]',
+			],
+			'raw' => [
+				ApiBase::PARAM_TYPE => 'string',
+				ApiBase::PARAM_DEFAULT => '',
+			],
+		];
 	}
 
 	/** @inheritDoc */
