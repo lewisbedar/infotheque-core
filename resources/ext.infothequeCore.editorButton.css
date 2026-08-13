@@ -76,9 +76,9 @@
 .ithc-form-modal {
 	position: relative;
 	box-sizing: border-box;
-	width: 900px;
-	max-width: 95vw;
-	max-height: 88vh;
+	width: 1180px;
+	max-width: 97vw;
+	max-height: 90vh;
 	overflow-y: auto;
 	background: #ffffff;
 	color: #1f2328;
@@ -184,22 +184,51 @@
 	min-width: 12em;
 }
 
-.ithc-row-remove-cell {
+.ithc-row-actions-cell {
 	width: 1%;
+	white-space: nowrap;
 	text-align: center;
 }
 
-.ithc-row-remove {
+.ithc-row-actions-cell button {
 	border: none;
 	background: none;
-	font-size: 18px;
+	font-size: 15px;
 	line-height: 1;
 	cursor: pointer;
 	color: #767f8c;
+	padding: 3px 4px;
+}
+
+.ithc-row-remove {
+	font-size: 18px;
+	color: #c0392b;
 }
 
 .ithc-row-remove:hover {
-	color: #c0392b;
+	color: #8a281a;
+}
+
+.ithc-row-move:hover,
+.ithc-row-edit:hover {
+	color: #1f2328;
+}
+
+/* Locked rows (pre-filled from an existing block): visibly read-only
+   until the pencil button is used, as a safety net against accidental
+   edits to already-published data. */
+.ithc-row-locked {
+	background: #f8f9fa;
+}
+
+.ithc-row-locked .ithc-field-input,
+.ithc-row-locked .ithc-field-input:disabled {
+	background: #f1f2f4;
+	color: #54595d;
+}
+
+.ithc-row-edit {
+	color: #36c;
 }
 
 .ithc-add-row-btn,
@@ -216,9 +245,19 @@
 }
 
 .ithc-add-row-btn:hover,
-.ithc-btn-primary:hover,
 .ithc-btn-secondary:hover {
 	background: #eef3ff;
+}
+
+/* Add = green, per feedback. */
+.ithc-add-row-btn {
+	border-color: #1a7a3c;
+	background: #eafaf0;
+	color: #0f5c2a;
+}
+
+.ithc-add-row-btn:hover {
+	background: #d6f3e0;
 }
 
 .ithc-btn-primary {
@@ -251,4 +290,128 @@
 	display: flex;
 	justify-content: flex-end;
 	gap: 10px;
+}
+
+/* Select widget: dropdown + hidden "autre" free-text field. */
+
+.ithc-select-wrap {
+	display: block;
+}
+
+.ithc-select-custom-input {
+	margin-top: 4px;
+}
+
+/* MultiSelect widget: a compact checkbox stack. */
+
+.ithc-multiselect-wrap {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding-top: 4px;
+}
+
+.ithc-checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 0.9em;
+	font-weight: 400;
+	white-space: nowrap;
+}
+
+/* Links widget: a small nested list of URL + label pairs. */
+
+.ithc-links-wrap {
+	min-width: 16em;
+}
+
+.ithc-links-row {
+	display: flex;
+	gap: 4px;
+	margin-bottom: 4px;
+}
+
+.ithc-links-row .ithc-field-input {
+	margin-top: 0;
+}
+
+.ithc-links-url {
+	flex: 2 1 auto;
+}
+
+.ithc-links-label {
+	flex: 1 1 auto;
+}
+
+.ithc-links-remove {
+	flex: 0 0 auto;
+	border: none;
+	background: none;
+	color: #c0392b;
+	cursor: pointer;
+	font-size: 16px;
+	line-height: 1;
+	padding: 0 4px;
+}
+
+.ithc-links-add {
+	border: 1px dashed #b6c7f2;
+	background: none;
+	color: #36c;
+	border-radius: 6px;
+	padding: 4px 10px;
+	font-size: 0.85em;
+	cursor: pointer;
+}
+
+.ithc-links-add:hover {
+	background: #eef3ff;
+}
+
+/* File widget: text input + live thumbnail + search-to-browse dropdown. */
+
+.ithc-file-wrap {
+	position: relative;
+	display: block;
+	min-width: 10em;
+}
+
+.ithc-file-thumb {
+	display: block;
+	margin-top: 6px;
+	max-width: 80px;
+	max-height: 80px;
+	border: 1px solid #c9ced6;
+	border-radius: 6px;
+}
+
+.ithc-file-suggestions {
+	position: absolute;
+	z-index: 5;
+	top: 100%;
+	left: 0;
+	right: 0;
+	background: #ffffff;
+	border: 1px solid #c9ced6;
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba( 0, 0, 0, 0.15 );
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+.ithc-file-suggestion {
+	display: block;
+	width: 100%;
+	padding: 6px 10px;
+	border: none;
+	background: none;
+	text-align: left;
+	font-size: 0.85em;
+	cursor: pointer;
+	color: #1f2328;
+}
+
+.ithc-file-suggestion:hover {
+	background: #eef3ff;
 }

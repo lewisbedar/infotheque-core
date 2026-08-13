@@ -16,6 +16,10 @@
  * call still runs server-side (single source of truth for escaping/
  * conventions), it's just not shown before inserting.
  *
+ * Rows pre-filled from an existing block start locked (read-only, with a
+ * pencil button to unlock) as a safety net against accidentally altering
+ * already-published data; freshly added rows start editable.
+ *
  * Detection of an "existing table to edit" is scoped to whichever
  * {{TemplateName...}} block (if any) the cursor is currently inside, not
  * just the first one found on the page — several forms share the same
@@ -142,11 +146,11 @@
 		var pendingBlock = block ? { start: block.start, end: block.end } : null;
 
 		if ( !block ) {
-			buildOverlay( schema, textarea, pendingBlock, {}, [ {} ] );
+			buildOverlay( schema, textarea, pendingBlock, {}, [ {} ], { preFilled: false } );
 			return;
 		}
 
-		buildOverlay( schema, textarea, pendingBlock, {}, [ {} ], true );
+		buildOverlay( schema, textarea, pendingBlock, {}, [ {} ], { loading: true } );
 		api.post( {
 			action: 'infothequecore',
 			op: 'parseexisting',
@@ -155,9 +159,9 @@
 			formatversion: 2
 		} ).done( function ( data ) {
 			var rows = ( data.rows && data.rows.length ) ? data.rows : [ {} ];
-			buildOverlay( schema, textarea, pendingBlock, data.title || {}, rows );
+			buildOverlay( schema, textarea, pendingBlock, data.title || {}, rows, { preFilled: true } );
 		} ).fail( function () {
-			buildOverlay( schema, textarea, pendingBlock, {}, [ {} ] );
+			buildOverlay( schema, textarea, pendingBlock, {}, [ {} ], { preFilled: false } );
 		} );
 	}
 
@@ -172,10 +176,12 @@
 
 	/**
 	 * (Re)builds the overlay for the given schema. Called once immediately
-	 * (loading=true) while an existing block is being fetched/parsed, then
-	 * again with the real pre-filled data once that resolves.
+	 * (options.loading=true) while an existing block is being fetched/
+	 * parsed, then again with the real pre-filled data once that resolves
+	 * (options.preFilled=true, so initial rows start locked).
 	 */
-	function buildOverlay( schema, textarea, pendingBlock, titleValues, rowsValues, loading ) {
+	function buildOverlay( schema, textarea, pendingBlock, titleValues, rowsValues, options ) {
+		options = options || {};
 		closeOverlay();
 
 		var overlay = document.createElement( 'div' );
@@ -201,7 +207,7 @@
 		heading.textContent = schema.label;
 		modal.appendChild( heading );
 
-		if ( loading ) {
+		if ( options.loading ) {
 			var loadingEl = document.createElement( 'p' );
 			loadingEl.className = 'ithc-loading';
 			loadingEl.textContent = mw.msg( 'infothequecore-loading-existing' );
@@ -225,7 +231,7 @@
 		table.appendChild( buildTableHead( schema ) );
 		var tbody = document.createElement( 'tbody' );
 		rowsValues.forEach( function ( rowVals ) {
-			tbody.appendChild( buildRowTr( schema, rowVals ) );
+			tbody.appendChild( buildRowTr( schema, rowVals, !!options.preFilled ) );
 		} );
 		table.appendChild( tbody );
 		tableWrap.appendChild( table );
@@ -236,7 +242,7 @@
 		addRowBtn.className = 'ithc-add-row-btn';
 		addRowBtn.textContent = mw.msg( 'infothequecore-add-row' );
 		addRowBtn.addEventListener( 'click', function () {
-			tbody.appendChild( buildRowTr( schema, {} ) );
+			tbody.appendChild( buildRowTr( schema, {}, false ) );
 		} );
 		modal.appendChild( addRowBtn );
 
@@ -269,31 +275,7 @@
 		currentOverlay = overlay;
 	}
 
-	// ---- Field / row rendering ----------------------------------------------
-
-	/** Title fields (non-repeating), rendered as label + input, above the table. */
-	function renderField( field, value ) {
-		var wrapper = document.createElement( 'div' );
-		wrapper.className = 'ithc-field';
-
-		var label = document.createElement( 'label' );
-		label.className = 'ithc-field-label';
-		label.appendChild( document.createTextNode( field.label + ( field.required ? ' *' : '' ) ) );
-		wrapper.appendChild( label );
-
-		var input = createFieldInput( field, wrapper );
-		input.value = value || '';
-		label.appendChild( input );
-
-		if ( field.help ) {
-			var help = document.createElement( 'p' );
-			help.className = 'ithc-field-help';
-			help.textContent = field.help;
-			wrapper.appendChild( help );
-		}
-
-		return wrapper;
-	}
+	// ---- Row construction: fields + lock/edit + reorder + remove ------------
 
 	function buildTableHead( schema ) {
 		var thead = document.createElement( 'thead' );
@@ -306,25 +288,61 @@
 			}
 			tr.appendChild( th );
 		} );
-		tr.appendChild( document.createElement( 'th' ) ); // remove-button column
+		tr.appendChild( document.createElement( 'th' ) ); // row actions column
 		thead.appendChild( tr );
 		return thead;
 	}
 
-	function buildRowTr( schema, rowValues ) {
+	function buildRowTr( schema, rowValues, locked ) {
 		var tr = document.createElement( 'tr' );
 		tr.className = 'ithc-row';
 
+		var fieldEls = [];
 		schema.rowFields.forEach( function ( field ) {
 			var td = document.createElement( 'td' );
-			var input = createFieldInput( field, td );
-			input.value = ( rowValues && rowValues[ field.key ] ) || '';
-			td.appendChild( input );
+			fieldEls.push( renderFieldValue( field, rowValues ? rowValues[ field.key ] : '', td ) );
 			tr.appendChild( td );
 		} );
 
-		var removeTd = document.createElement( 'td' );
-		removeTd.className = 'ithc-row-remove-cell';
+		var actionsTd = document.createElement( 'td' );
+		actionsTd.className = 'ithc-row-actions-cell';
+
+		var editBtn = document.createElement( 'button' );
+		editBtn.type = 'button';
+		editBtn.className = 'ithc-row-edit';
+		editBtn.textContent = '✏️';
+		editBtn.title = mw.msg( 'infothequecore-edit-row' );
+		editBtn.addEventListener( 'click', function () {
+			setRowLocked( tr, fieldEls, editBtn, false );
+		} );
+		actionsTd.appendChild( editBtn );
+
+		var upBtn = document.createElement( 'button' );
+		upBtn.type = 'button';
+		upBtn.className = 'ithc-row-move';
+		upBtn.textContent = '↑';
+		upBtn.title = mw.msg( 'infothequecore-move-row-up' );
+		upBtn.addEventListener( 'click', function () {
+			var prev = tr.previousElementSibling;
+			if ( prev ) {
+				tr.parentNode.insertBefore( tr, prev );
+			}
+		} );
+		actionsTd.appendChild( upBtn );
+
+		var downBtn = document.createElement( 'button' );
+		downBtn.type = 'button';
+		downBtn.className = 'ithc-row-move';
+		downBtn.textContent = '↓';
+		downBtn.title = mw.msg( 'infothequecore-move-row-down' );
+		downBtn.addEventListener( 'click', function () {
+			var next = tr.nextElementSibling;
+			if ( next ) {
+				tr.parentNode.insertBefore( next, tr );
+			}
+		} );
+		actionsTd.appendChild( downBtn );
+
 		var removeBtn = document.createElement( 'button' );
 		removeBtn.type = 'button';
 		removeBtn.className = 'ithc-row-remove';
@@ -333,40 +351,91 @@
 		removeBtn.addEventListener( 'click', function () {
 			tr.remove();
 		} );
-		removeTd.appendChild( removeBtn );
-		tr.appendChild( removeTd );
+		actionsTd.appendChild( removeBtn );
+
+		tr.appendChild( actionsTd );
+
+		setRowLocked( tr, fieldEls, editBtn, !!locked );
 
 		return tr;
 	}
 
+	function setRowLocked( tr, fieldEls, editBtn, locked ) {
+		tr.classList.toggle( 'ithc-row-locked', locked );
+		fieldEls.forEach( function ( el ) {
+			if ( 'disabled' in el ) {
+				el.disabled = locked;
+			}
+			Array.prototype.forEach.call(
+				el.querySelectorAll( 'input, textarea, select, button' ),
+				function ( ctrl ) {
+					ctrl.disabled = locked;
+				}
+			);
+		} );
+		editBtn.hidden = !locked;
+	}
+
+	// ---- Field rendering, by widget type -------------------------------------
+
+	/** Title fields (non-repeating), rendered as label + input, above the table. */
+	function renderField( field, value ) {
+		var wrapper = document.createElement( 'div' );
+		wrapper.className = 'ithc-field';
+
+		var label = document.createElement( 'label' );
+		label.className = 'ithc-field-label';
+		label.appendChild( document.createTextNode( field.label + ( field.required ? ' *' : '' ) ) );
+		wrapper.appendChild( label );
+
+		renderFieldValue( field, value, label );
+
+		if ( field.help ) {
+			var help = document.createElement( 'p' );
+			help.className = 'ithc-field-help';
+			help.textContent = field.help;
+			wrapper.appendChild( help );
+		}
+
+		return wrapper;
+	}
+
 	/**
-	 * Builds the actual <input>/<textarea> for a field, tagging it with
-	 * data-ithc-key so collectFields() can read it back regardless of
-	 * whether it lives in a labeled wrapper (title fields) or a bare table
-	 * cell (row fields). A combobox's <datalist> is appended to
-	 * datalistParent (the field's own container), since <datalist> can't
-	 * be a child of <input>.
+	 * Dispatches to the right widget renderer, appends it into `container`,
+	 * and returns the element carrying data-ithc-field / ithcGetValue().
 	 */
-	function createFieldInput( field, datalistParent ) {
-		var input;
+	function renderFieldValue( field, value, container ) {
+		switch ( field.widget ) {
+			case 'combobox':
+				return renderComboboxInput( field, value, container );
+			case 'select':
+				return renderSelectInput( field, value, container );
+			case 'multiselect':
+				return renderMultiSelectInput( field, value, container );
+			case 'links':
+				return renderLinksInput( field, value, container );
+			case 'file':
+				return renderFileInput( field, value, container );
+			case 'textarea':
+			case 'text':
+			default:
+				return renderSimpleInput( field, value, container );
+		}
+	}
+
+	function markField( el, field, getValue ) {
+		el.dataset.ithcField = field.key;
+		el.ithcFieldKey = field.key;
+		el.ithcGetValue = getValue;
+		return el;
+	}
+
+	function renderSimpleInput( field, value, container ) {
+		var input = field.widget === 'textarea' ? document.createElement( 'textarea' ) : document.createElement( 'input' );
 		if ( field.widget === 'textarea' ) {
-			input = document.createElement( 'textarea' );
 			input.rows = 2;
 		} else {
-			input = document.createElement( 'input' );
 			input.type = 'text';
-			if ( field.widget === 'combobox' && field.suggestedValues && field.suggestedValues.length ) {
-				var listId = 'ithc-datalist-' + ( fieldIdCounter++ );
-				var datalist = document.createElement( 'datalist' );
-				datalist.id = listId;
-				field.suggestedValues.forEach( function ( v ) {
-					var opt = document.createElement( 'option' );
-					opt.value = v;
-					datalist.appendChild( opt );
-				} );
-				datalistParent.appendChild( datalist );
-				input.setAttribute( 'list', listId );
-			}
 		}
 		input.className = 'ithc-field-input';
 		if ( field.example ) {
@@ -375,14 +444,325 @@
 		if ( field.help ) {
 			input.title = field.help;
 		}
-		input.dataset.ithcKey = field.key;
-		return input;
+		input.value = value || '';
+		container.appendChild( input );
+		return markField( input, field, function () {
+			return input.value;
+		} );
+	}
+
+	function renderComboboxInput( field, value, container ) {
+		var input = document.createElement( 'input' );
+		input.type = 'text';
+		input.className = 'ithc-field-input';
+		if ( field.example ) {
+			input.placeholder = field.example;
+		}
+		if ( field.suggestedValues && field.suggestedValues.length ) {
+			var listId = 'ithc-datalist-' + ( fieldIdCounter++ );
+			var datalist = document.createElement( 'datalist' );
+			datalist.id = listId;
+			field.suggestedValues.forEach( function ( v ) {
+				var opt = document.createElement( 'option' );
+				opt.value = v;
+				datalist.appendChild( opt );
+			} );
+			container.appendChild( datalist );
+			input.setAttribute( 'list', listId );
+		}
+		input.value = value || '';
+		container.appendChild( input );
+		return markField( input, field, function () {
+			return input.value;
+		} );
+	}
+
+	/** Closed choice list; a value matching no known key falls back to a free-text "autre" field. */
+	function renderSelectInput( field, value, container ) {
+		var wrap = document.createElement( 'span' );
+		wrap.className = 'ithc-select-wrap';
+
+		var select = document.createElement( 'select' );
+		select.className = 'ithc-field-input';
+		var matched = false;
+		( field.options || [] ).forEach( function ( opt ) {
+			var o = document.createElement( 'option' );
+			o.value = opt.key;
+			o.textContent = opt.label;
+			if ( opt.key === value ) {
+				o.selected = true;
+				matched = true;
+			}
+			select.appendChild( o );
+		} );
+		var customOpt = document.createElement( 'option' );
+		customOpt.value = '__custom__';
+		customOpt.textContent = mw.msg( 'infothequecore-select-custom' );
+		select.appendChild( customOpt );
+
+		var customInput = document.createElement( 'input' );
+		customInput.type = 'text';
+		customInput.className = 'ithc-field-input ithc-select-custom-input';
+		customInput.placeholder = mw.msg( 'infothequecore-select-custom-placeholder' );
+
+		if ( value && !matched ) {
+			select.value = '__custom__';
+			customInput.value = value;
+			customInput.hidden = false;
+		} else {
+			customInput.hidden = true;
+		}
+
+		select.addEventListener( 'change', function () {
+			customInput.hidden = select.value !== '__custom__';
+		} );
+
+		wrap.appendChild( select );
+		wrap.appendChild( customInput );
+		container.appendChild( wrap );
+
+		return markField( wrap, field, function () {
+			return select.value === '__custom__' ? customInput.value : select.value;
+		} );
+	}
+
+	/** Several choices at once (checkboxes), joined with ", ". */
+	function renderMultiSelectInput( field, value, container ) {
+		var wrap = document.createElement( 'span' );
+		wrap.className = 'ithc-multiselect-wrap';
+
+		var selected = ( value || '' ).split( ',' ).map( function ( s ) {
+			return s.trim();
+		} ).filter( Boolean );
+
+		var boxes = [];
+		( field.suggestedValues || [] ).forEach( function ( v ) {
+			var label = document.createElement( 'label' );
+			label.className = 'ithc-checkbox-label';
+			var cb = document.createElement( 'input' );
+			cb.type = 'checkbox';
+			cb.value = v;
+			cb.checked = selected.indexOf( v ) !== -1;
+			boxes.push( cb );
+			label.appendChild( cb );
+			label.appendChild( document.createTextNode( ' ' + v ) );
+			wrap.appendChild( label );
+		} );
+
+		container.appendChild( wrap );
+		return markField( wrap, field, function () {
+			return boxes.filter( function ( b ) {
+				return b.checked;
+			} ).map( function ( b ) {
+				return b.value;
+			} ).join( ', ' );
+		} );
+	}
+
+	/** Structured (url, label) pairs -> "[url label]" or a bulleted list of several. */
+	function renderLinksInput( field, value, container ) {
+		var wrap = document.createElement( 'div' );
+		wrap.className = 'ithc-links-wrap';
+
+		var list = document.createElement( 'div' );
+		list.className = 'ithc-links-list';
+		wrap.appendChild( list );
+
+		var initial = [];
+		if ( value ) {
+			try {
+				initial = JSON.parse( value ) || [];
+			} catch ( e ) {
+				initial = [];
+			}
+		}
+		if ( !initial.length ) {
+			initial = [ { url: '', label: '' } ];
+		}
+
+		function addLinkRow( link ) {
+			var row = document.createElement( 'div' );
+			row.className = 'ithc-links-row';
+
+			var urlInput = document.createElement( 'input' );
+			urlInput.type = 'text';
+			urlInput.className = 'ithc-field-input ithc-links-url';
+			urlInput.placeholder = mw.msg( 'infothequecore-links-url-placeholder' );
+			urlInput.value = ( link && link.url ) || '';
+
+			var labelInput = document.createElement( 'input' );
+			labelInput.type = 'text';
+			labelInput.className = 'ithc-field-input ithc-links-label';
+			labelInput.placeholder = mw.msg( 'infothequecore-links-label-placeholder' );
+			labelInput.value = ( link && link.label ) || '';
+
+			var removeBtn = document.createElement( 'button' );
+			removeBtn.type = 'button';
+			removeBtn.className = 'ithc-links-remove';
+			removeBtn.textContent = '×';
+			removeBtn.title = mw.msg( 'infothequecore-links-remove' );
+			removeBtn.addEventListener( 'click', function () {
+				row.remove();
+			} );
+
+			row.appendChild( urlInput );
+			row.appendChild( labelInput );
+			row.appendChild( removeBtn );
+			list.appendChild( row );
+		}
+
+		initial.forEach( addLinkRow );
+
+		var addBtn = document.createElement( 'button' );
+		addBtn.type = 'button';
+		addBtn.className = 'ithc-links-add';
+		addBtn.textContent = mw.msg( 'infothequecore-links-add' );
+		addBtn.addEventListener( 'click', function () {
+			addLinkRow( { url: '', label: '' } );
+		} );
+		wrap.appendChild( addBtn );
+
+		container.appendChild( wrap );
+
+		return markField( wrap, field, function () {
+			var links = Array.prototype.map.call( list.querySelectorAll( '.ithc-links-row' ), function ( row ) {
+				return {
+					url: row.querySelector( '.ithc-links-url' ).value.trim(),
+					label: row.querySelector( '.ithc-links-label' ).value.trim()
+				};
+			} ).filter( function ( l ) {
+				return l.url;
+			} );
+			return JSON.stringify( links );
+		} );
+	}
+
+	/** Bare wiki file name, with a live thumbnail preview and a search-to-browse dropdown. */
+	function renderFileInput( field, value, container ) {
+		var wrap = document.createElement( 'span' );
+		wrap.className = 'ithc-file-wrap';
+
+		var input = document.createElement( 'input' );
+		input.type = 'text';
+		input.className = 'ithc-field-input';
+		input.placeholder = field.example || mw.msg( 'infothequecore-photo-browse-placeholder' );
+		if ( field.help ) {
+			input.title = field.help;
+		}
+		input.value = value || '';
+
+		var thumb = document.createElement( 'img' );
+		thumb.className = 'ithc-file-thumb';
+		thumb.alt = '';
+		thumb.hidden = true;
+
+		var suggestions = document.createElement( 'div' );
+		suggestions.className = 'ithc-file-suggestions';
+		suggestions.hidden = true;
+
+		var searchTimer = null;
+
+		function updateThumb() {
+			var name = input.value.trim();
+			if ( !name ) {
+				thumb.hidden = true;
+				return;
+			}
+			api.get( {
+				action: 'query',
+				titles: 'File:' + name,
+				prop: 'imageinfo',
+				iiprop: 'url',
+				iiurlwidth: 80,
+				formatversion: 2
+			} ).done( function ( data ) {
+				var pages = ( data.query && data.query.pages ) || [];
+				var info = pages[ 0 ] && pages[ 0 ].imageinfo && pages[ 0 ].imageinfo[ 0 ];
+				if ( info && info.thumburl ) {
+					thumb.src = info.thumburl;
+					thumb.hidden = false;
+				} else {
+					thumb.hidden = true;
+				}
+			} ).fail( function () {
+				thumb.hidden = true;
+			} );
+		}
+
+		function searchFiles( term ) {
+			api.get( {
+				action: 'query',
+				list: 'allimages',
+				aiprefix: term,
+				ailimit: 8,
+				formatversion: 2
+			} ).done( function ( data ) {
+				var files = ( data.query && data.query.allimages ) || [];
+				suggestions.innerHTML = '';
+				if ( !files.length ) {
+					suggestions.hidden = true;
+					return;
+				}
+				files.forEach( function ( f ) {
+					var item = document.createElement( 'button' );
+					item.type = 'button';
+					item.className = 'ithc-file-suggestion';
+					item.textContent = f.name;
+					item.addEventListener( 'click', function () {
+						input.value = f.name;
+						suggestions.hidden = true;
+						updateThumb();
+					} );
+					suggestions.appendChild( item );
+				} );
+				suggestions.hidden = false;
+			} ).fail( function () {
+				suggestions.hidden = true;
+			} );
+		}
+
+		input.addEventListener( 'input', function () {
+			updateThumb();
+			clearTimeout( searchTimer );
+			var term = input.value.trim();
+			if ( !term ) {
+				suggestions.hidden = true;
+				suggestions.innerHTML = '';
+				return;
+			}
+			searchTimer = setTimeout( function () {
+				searchFiles( term );
+			}, 300 );
+		} );
+		input.addEventListener( 'focus', function () {
+			if ( input.value.trim() ) {
+				searchFiles( input.value.trim() );
+			}
+		} );
+		document.addEventListener( 'click', function ( e ) {
+			if ( !wrap.contains( e.target ) ) {
+				suggestions.hidden = true;
+			}
+		} );
+
+		wrap.appendChild( input );
+		wrap.appendChild( thumb );
+		wrap.appendChild( suggestions );
+		container.appendChild( wrap );
+
+		if ( value ) {
+			updateThumb();
+		}
+
+		return markField( wrap, field, function () {
+			return input.value;
+		} );
 	}
 
 	function collectFields( container ) {
 		var values = {};
-		Array.prototype.forEach.call( container.querySelectorAll( '[data-ithc-key]' ), function ( input ) {
-			values[ input.dataset.ithcKey ] = input.value;
+		Array.prototype.forEach.call( container.querySelectorAll( '[data-ithc-field]' ), function ( el ) {
+			values[ el.ithcFieldKey ] = el.ithcGetValue();
 		} );
 		return values;
 	}
