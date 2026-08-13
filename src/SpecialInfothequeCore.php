@@ -2,9 +2,7 @@
 
 namespace MediaWiki\Extension\InfothequeCore;
 
-use Html;
 use HTMLForm;
-use Linker;
 use MediaWiki\CommentStore\CommentStoreComment;
 use MediaWiki\Content\WikitextContent;
 use MediaWiki\Extension\InfothequeCore\Generator\Validator;
@@ -13,7 +11,10 @@ use MediaWiki\Extension\InfothequeCore\Schema\FieldDefinition;
 use MediaWiki\Extension\InfothequeCore\Schema\FieldWidget;
 use MediaWiki\Extension\InfothequeCore\Schema\FormSchema;
 use MediaWiki\Extension\InfothequeCore\Schema\SchemaRegistry;
+use MediaWiki\Html\Html;
+use MediaWiki\Linker\Linker;
 use MediaWiki\MediaWikiServices;
+use MediaWiki\Parser\ParserOptions;
 use MediaWiki\Revision\SlotRecord;
 use MediaWiki\Title\Title;
 use SpecialPage;
@@ -179,7 +180,7 @@ class SpecialInfothequeCore extends SpecialPage {
 		$parserOutput = MediaWikiServices::getInstance()->getParserFactory()->create()->parse(
 			$wikitext,
 			$targetTitle,
-			\ParserOptions::newFromContext( $this->getContext() )
+			ParserOptions::newFromContext( $this->getContext() )
 		);
 
 		$out->addHTML( Html::element( 'h2', [], $this->msg( 'infothequecore-preview-heading' )->text() ) );
