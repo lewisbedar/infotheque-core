@@ -2,7 +2,7 @@
 
 namespace MediaWiki\Extension\InfothequeCore\Api;
 
-use MediaWiki\Api\ApiBase;
+use ApiBase;
 use MediaWiki\Extension\InfothequeCore\Generator\ExistingBlockParser;
 use MediaWiki\Extension\InfothequeCore\Generator\Validator;
 use MediaWiki\Extension\InfothequeCore\Generator\WikitextGenerator;
