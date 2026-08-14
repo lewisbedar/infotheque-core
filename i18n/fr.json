@@ -41,7 +41,7 @@
 	"infothequecore-field-os-pilote": "Système cible",
 	"infothequecore-field-date-pilote": "Date",
 	"infothequecore-field-fichier-pilote": "Fichier",
-	"infothequecore-field-fichier-pilote-help": "Le fichier doit déjà être importé sur le wiki (menu Outils > Importer un fichier).",
+	"infothequecore-field-fichier-pilote-help": "Collez l'URL directe du fichier. Vous pouvez aussi chercher un fichier déjà importé sur le wiki, mais ce n'est pas nécessaire.",
 
 	"infothequecore-unknown-form": "Type de formulaire inconnu.",
 	"infothequecore-back-to-selector": "← Changer de type de contenu",

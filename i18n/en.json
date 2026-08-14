@@ -41,7 +41,7 @@
 	"infothequecore-field-os-pilote": "Target system",
 	"infothequecore-field-date-pilote": "Date",
 	"infothequecore-field-fichier-pilote": "File",
-	"infothequecore-field-fichier-pilote-help": "The file must already be uploaded to the wiki (Tools menu > Upload file).",
+	"infothequecore-field-fichier-pilote-help": "Paste the file's direct URL. You can also search for a file already uploaded to the wiki, but that's not required.",
 
 	"infothequecore-unknown-form": "Unknown form type.",
 	"infothequecore-back-to-selector": "← Change content type",
