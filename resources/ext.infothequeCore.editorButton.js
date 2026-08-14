@@ -902,6 +902,45 @@
 			} );
 		}
 
+		/**
+		 * .ithc-file-suggestions is position:fixed (not absolute) because
+		 * .ithc-rows-table-wrap has overflow-x:auto, which per the CSS spec
+		 * also clips the vertical axis — an absolutely-positioned dropdown
+		 * extending below the input got cut off there. No + window.scrollY/
+		 * scrollX here: see the same note on the MultiSelect panel above.
+		 */
+		function positionSuggestions() {
+			var rect = input.getBoundingClientRect();
+			suggestions.style.top = rect.bottom + 'px';
+			suggestions.style.left = rect.left + 'px';
+			suggestions.style.width = rect.width + 'px';
+		}
+
+		function outsideClick( e ) {
+			if ( !wrap.contains( e.target ) ) {
+				hideSuggestions();
+			}
+		}
+
+		function showSuggestions() {
+			suggestions.hidden = false;
+			positionSuggestions();
+			// Deferred, and the scroll listener detached on hide: same
+			// fix as the Langue MultiSelect panel above (VisualEditor
+			// seems to trigger an incidental scroll/click on focus that
+			// otherwise closes a just-opened floating panel right away).
+			setTimeout( function () {
+				document.addEventListener( 'click', outsideClick );
+				window.addEventListener( 'scroll', hideSuggestions, true );
+			}, 0 );
+		}
+
+		function hideSuggestions() {
+			suggestions.hidden = true;
+			document.removeEventListener( 'click', outsideClick );
+			window.removeEventListener( 'scroll', hideSuggestions, true );
+		}
+
 		function searchFiles( term ) {
 			api.get( {
 				action: 'query',
@@ -913,7 +952,7 @@
 				var files = ( data.query && data.query.allimages ) || [];
 				suggestions.innerHTML = '';
 				if ( !files.length ) {
-					suggestions.hidden = true;
+					hideSuggestions();
 					return;
 				}
 				files.forEach( function ( f ) {
@@ -923,14 +962,14 @@
 					item.textContent = f.name;
 					item.addEventListener( 'click', function () {
 						input.value = f.name;
-						suggestions.hidden = true;
+						hideSuggestions();
 						updateThumb();
 					} );
 					suggestions.appendChild( item );
 				} );
-				suggestions.hidden = false;
+				showSuggestions();
 			} ).fail( function () {
-				suggestions.hidden = true;
+				hideSuggestions();
 			} );
 		}
 
@@ -939,8 +978,8 @@
 			clearTimeout( searchTimer );
 			var term = input.value.trim();
 			if ( !term ) {
-				suggestions.hidden = true;
 				suggestions.innerHTML = '';
+				hideSuggestions();
 				return;
 			}
 			searchTimer = setTimeout( function () {
@@ -950,11 +989,6 @@
 		input.addEventListener( 'focus', function () {
 			if ( input.value.trim() ) {
 				searchFiles( input.value.trim() );
-			}
-		} );
-		document.addEventListener( 'click', function ( e ) {
-			if ( !wrap.contains( e.target ) ) {
-				suggestions.hidden = true;
 			}
 		} );
 

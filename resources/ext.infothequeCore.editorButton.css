@@ -660,12 +660,13 @@
 	z-index: 1 !important;
 }
 
+/* position:fixed + JS-computed coordinates (positionSuggestions() in JS),
+   not absolute: .ithc-rows-table-wrap's overflow-x:auto also clips the
+   vertical axis per the CSS spec, cutting off an absolutely-positioned
+   dropdown extending below the input. */
 .ithc-file-suggestions {
-	position: absolute;
-	z-index: 5;
-	top: 100%;
-	left: 0;
-	right: 0;
+	position: fixed;
+	z-index: 10000;
 	background: #ffffff;
 	border: 1px solid #c9ced6;
 	border-radius: 8px;
