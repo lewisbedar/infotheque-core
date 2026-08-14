@@ -86,7 +86,7 @@
 			var item = document.createElement( 'button' );
 			item.type = 'button';
 			item.className = 'ithc-dropdown-item';
-			item.textContent = schemaDisplayLabel( schema );
+			item.textContent = schema.label;
 			item.addEventListener( 'click', function () {
 				dropdown.hidden = true;
 				openAssistant( textarea, schema );
@@ -317,15 +317,55 @@
 		var tr = document.createElement( 'tr' );
 		schema.rowFields.forEach( function ( field ) {
 			var th = document.createElement( 'th' );
-			th.textContent = field.label + ( field.required ? ' *' : '' );
+			th.appendChild( document.createTextNode( field.label + ( field.required ? ' *' : '' ) ) );
 			if ( field.help ) {
-				th.title = field.help;
+				th.appendChild( buildHelpIcon( field.help ) );
 			}
 			tr.appendChild( th );
 		} );
 		tr.appendChild( document.createElement( 'th' ) ); // row actions column
 		thead.appendChild( tr );
 		return thead;
+	}
+
+	/** A small "?" icon that toggles a floating text bubble on click — more discoverable than a plain hover title. */
+	function buildHelpIcon( helpText ) {
+		var icon = document.createElement( 'button' );
+		icon.type = 'button';
+		icon.className = 'ithc-help-icon';
+		icon.textContent = '?';
+
+		var bubble = document.createElement( 'div' );
+		bubble.className = 'ithc-help-bubble';
+		bubble.textContent = helpText;
+		bubble.hidden = true;
+
+		icon.addEventListener( 'click', function ( e ) {
+			e.stopPropagation();
+			if ( bubble.hidden ) {
+				var rect = icon.getBoundingClientRect();
+				bubble.hidden = false;
+				var bubbleRect = bubble.getBoundingClientRect();
+				var left = Math.min( rect.left, window.innerWidth - bubbleRect.width - 8 );
+				bubble.style.top = ( rect.bottom + 4 + window.scrollY ) + 'px';
+				bubble.style.left = ( Math.max( left, 8 ) + window.scrollX ) + 'px';
+			} else {
+				bubble.hidden = true;
+			}
+		} );
+		document.addEventListener( 'click', function ( e ) {
+			if ( e.target !== icon ) {
+				bubble.hidden = true;
+			}
+		} );
+		window.addEventListener( 'scroll', function () {
+			bubble.hidden = true;
+		}, true );
+
+		var wrap = document.createDocumentFragment();
+		wrap.appendChild( icon );
+		wrap.appendChild( bubble );
+		return wrap;
 	}
 
 	function buildRowTr( schema, rowValues, locked ) {
@@ -520,45 +560,21 @@
 
 		var select = document.createElement( 'select' );
 		select.className = 'ithc-field-input';
-		var matched = false;
 		( field.options || [] ).forEach( function ( opt ) {
 			var o = document.createElement( 'option' );
 			o.value = opt.key;
 			o.textContent = opt.label;
 			if ( opt.key === value ) {
 				o.selected = true;
-				matched = true;
 			}
 			select.appendChild( o );
 		} );
-		var customOpt = document.createElement( 'option' );
-		customOpt.value = '__custom__';
-		customOpt.textContent = mw.msg( 'infothequecore-select-custom' );
-		select.appendChild( customOpt );
-
-		var customInput = document.createElement( 'input' );
-		customInput.type = 'text';
-		customInput.className = 'ithc-field-input ithc-select-custom-input';
-		customInput.placeholder = mw.msg( 'infothequecore-select-custom-placeholder' );
-
-		if ( value && !matched ) {
-			select.value = '__custom__';
-			customInput.value = value;
-			customInput.hidden = false;
-		} else {
-			customInput.hidden = true;
-		}
-
-		select.addEventListener( 'change', function () {
-			customInput.hidden = select.value !== '__custom__';
-		} );
 
 		wrap.appendChild( select );
-		wrap.appendChild( customInput );
 		container.appendChild( wrap );
 
 		return markField( wrap, field, function () {
-			return select.value === '__custom__' ? customInput.value : select.value;
+			return select.value;
 		} );
 	}
 

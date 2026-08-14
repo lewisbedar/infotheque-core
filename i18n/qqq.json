@@ -70,8 +70,6 @@
 	"infothequecore-edit-row": "Tooltip on the pencil button that unlocks a pre-filled row for editing.",
 	"infothequecore-move-row-up": "Tooltip on the button that moves a row one position up in the table.",
 	"infothequecore-move-row-down": "Tooltip on the button that moves a row one position down in the table.",
-	"infothequecore-select-custom": "Extra option appended to every Select-widget dropdown, revealing a free-text field for a custom value.",
-	"infothequecore-select-custom-placeholder": "Placeholder text for the free-text field revealed by infothequecore-select-custom.",
 	"infothequecore-links-add": "Button label to add another URL+label pair in a Links-widget cell.",
 	"infothequecore-links-url-placeholder": "Placeholder for the URL input in a Links-widget entry.",
 	"infothequecore-links-label-placeholder": "Placeholder for the link-text input in a Links-widget entry.",

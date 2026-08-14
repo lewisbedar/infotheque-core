@@ -214,6 +214,17 @@
 	resize: vertical;
 }
 
+/* Buttons (the Langue dropdown trigger) keep native OS chrome even with
+   border:none/background:transparent in some browsers unless appearance
+   is reset explicitly. */
+.ithc-rows-table button.ithc-field-input {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	text-align: left;
+	cursor: pointer;
+}
+
 /* Composite widgets (select/multiselect/links/file) keep a little
    breathing room instead of going fully edge-to-edge, since they hold
    more than a single line of raw text. */
@@ -316,6 +327,50 @@
 	cursor: default;
 }
 
+.ithc-help-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 14px;
+	height: 14px;
+	margin-left: 4px;
+	padding: 0;
+	border: 1px solid #767f8c;
+	border-radius: 50%;
+	background: #ffffff;
+	color: #767f8c;
+	font-size: 10px;
+	font-weight: 700;
+	line-height: 1;
+	cursor: pointer;
+	vertical-align: middle;
+}
+
+.ithc-help-icon:hover {
+	background: #eef3ff;
+	border-color: #36c;
+	color: #36c;
+}
+
+.ithc-help-bubble {
+	position: fixed;
+	z-index: 40;
+	max-width: 260px;
+	padding: 8px 10px;
+	background: #1f2328;
+	color: #ffffff;
+	border-radius: 8px;
+	box-shadow: 0 4px 16px rgba( 0, 0, 0, 0.25 );
+	font-size: 0.82em;
+	font-weight: 400;
+	white-space: normal;
+	text-transform: none;
+}
+
+.ithc-help-bubble[hidden] {
+	display: none;
+}
+
 .ithc-form-errors {
 	margin: 12px 0;
 	padding: 10px 14px;
@@ -337,10 +392,6 @@
 
 .ithc-select-wrap {
 	display: block;
-}
-
-.ithc-select-custom-input {
-	margin-top: 4px;
 }
 
 /* MultiSelect widget: a closed dropdown button that opens a checkbox
