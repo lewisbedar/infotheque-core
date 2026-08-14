@@ -194,8 +194,7 @@ class SchemaRegistry {
 				new FieldDefinition(
 					key: 'description',
 					widget: FieldWidget::Textarea,
-					labelMsg: 'infothequecore-field-description',
-					helpMsg: 'infothequecore-field-description-help'
+					labelMsg: 'infothequecore-field-description'
 				),
 				new FieldDefinition(
 					key: 'format',
