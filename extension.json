@@ -75,7 +75,8 @@
 				"infothequecore-links-remove",
 				"infothequecore-photo-browse-placeholder",
 				"infothequecore-select-placeholder",
-				"infothequecore-schema-mismatch-warning"
+				"infothequecore-schema-mismatch-warning",
+				"infothequecore-file-upload-button"
 			],
 			"dependencies": [
 				"mediawiki.util",

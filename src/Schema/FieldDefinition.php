@@ -43,6 +43,11 @@ class FieldDefinition {
 	 *   `<div class="ith-dl-serialbox">...</div>`, mirroring the existing
 	 *   gadget's convention). Also used in reverse by ExistingBlockParser to
 	 *   pull merged content back out for pre-filling.
+	 * @param bool $allowUpload File widget only: shows a "Téléverser..."
+	 *   button opening MediaWiki's own upload dialog next to the
+	 *   search-existing-file input. Off by default — deliberately not set
+	 *   for Pilotes' "fichier" field, since uploading drivers to the wiki
+	 *   isn't the expected path there (see its placeholder/help text).
 	 */
 	public function __construct(
 		public readonly string $key,
@@ -56,7 +61,8 @@ class FieldDefinition {
 		public readonly bool $rawWikitext = false,
 		public readonly array $options = [],
 		public readonly ?string $mergeIntoKey = null,
-		public readonly ?string $lineWrap = null
+		public readonly ?string $lineWrap = null,
+		public readonly bool $allowUpload = false
 	) {
 	}
 

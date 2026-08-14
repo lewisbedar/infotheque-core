@@ -40,6 +40,7 @@ class SchemaExporter {
 			'required' => $field->required,
 			'suggestedValues' => $field->suggestedValues,
 			'example' => $field->example,
+			'allowUpload' => $field->allowUpload,
 			// Select only; strip the server-only "wikitext" value, the
 			// client just needs key+label to build <option> elements.
 			'options' => array_map(

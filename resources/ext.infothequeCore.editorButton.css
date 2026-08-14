@@ -573,6 +573,22 @@
 	border-radius: 6px;
 }
 
+.ithc-file-upload-btn {
+	display: block;
+	margin-top: 4px;
+	border: 1px dashed #b6c7f2;
+	background: none;
+	color: #36c;
+	border-radius: 6px;
+	padding: 4px 10px;
+	font-size: 0.85em;
+	cursor: pointer;
+}
+
+.ithc-file-upload-btn:hover {
+	background: #eef3ff;
+}
+
 .ithc-file-suggestions {
 	position: absolute;
 	z-index: 5;

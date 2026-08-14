@@ -911,6 +911,18 @@
 		} );
 
 		wrap.appendChild( input );
+
+		if ( field.allowUpload ) {
+			var uploadBtn = document.createElement( 'button' );
+			uploadBtn.type = 'button';
+			uploadBtn.className = 'ithc-file-upload-btn';
+			uploadBtn.textContent = mw.msg( 'infothequecore-file-upload-button' );
+			uploadBtn.addEventListener( 'click', function () {
+				openUploadDialog( input, updateThumb );
+			} );
+			wrap.appendChild( uploadBtn );
+		}
+
 		wrap.appendChild( thumb );
 		wrap.appendChild( suggestions );
 		container.appendChild( wrap );
@@ -921,6 +933,25 @@
 
 		return markField( wrap, field, function () {
 			return input.value;
+		} );
+	}
+
+	/** Opens MediaWiki's own upload dialog; on success, fills `input` with the bare file name. */
+	function openUploadDialog( input, onFilled ) {
+		mw.loader.using( 'mediawiki.Upload.Dialog' ).done( function () {
+			var uploadDialog = new mw.Upload.Dialog( {} );
+			var windowManager = new OO.ui.WindowManager();
+			document.body.appendChild( windowManager.$element[ 0 ] );
+			windowManager.addWindows( [ uploadDialog ] );
+
+			uploadDialog.on( 'fileSaved', function ( imageInfo ) {
+				input.value = ( imageInfo.canonicaltitle || '' ).replace( /^(Fichier|File)\s*:\s*/i, '' );
+				onFilled();
+			} );
+			windowManager.openWindow( uploadDialog ).closed.then( function () {
+				windowManager.$element.remove();
+				windowManager.destroy();
+			} );
 		} );
 	}
 
