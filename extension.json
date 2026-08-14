@@ -92,7 +92,8 @@
 			],
 			"dependencies": [
 				"ext.infothequeCore.editorButton",
-				"ext.visualEditor.mwcore"
+				"ext.visualEditor.mwcore",
+				"ext.visualEditor.mwtransclusion"
 			],
 			"messages": [
 				"infothequecore-editor-trigger"
