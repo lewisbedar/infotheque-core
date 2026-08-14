@@ -159,22 +159,15 @@ class SchemaRegistry {
 				),
 				new FieldDefinition(
 					key: 'langue',
-					widget: FieldWidget::Combobox,
+					widget: FieldWidget::MultiSelect,
 					labelMsg: 'infothequecore-field-langue',
-					suggestedValues: [ 'Français', 'Anglais', 'Multilingue' ]
+					suggestedValues: [ 'Français', 'Anglais', 'Allemand', 'Espagnol', 'Italien', 'Multilingue' ]
 				),
 				new FieldDefinition(
 					key: 'description',
 					widget: FieldWidget::Textarea,
 					labelMsg: 'infothequecore-field-description',
 					helpMsg: 'infothequecore-field-description-help'
-				),
-				new FieldDefinition(
-					key: 'format',
-					widget: FieldWidget::File,
-					labelMsg: 'infothequecore-field-format-document',
-					helpMsg: 'infothequecore-field-format-document-help',
-					wikitextWrap: '[[Fichier:%s|centré]]'
 				),
 				new FieldDefinition(
 					key: 'liens',
