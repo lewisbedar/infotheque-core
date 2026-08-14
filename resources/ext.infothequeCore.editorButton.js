@@ -189,14 +189,17 @@
 		var cursorPos = textarea.selectionStart || 0;
 		var block = findEnclosingBlock( textarea.value, schema.templateName, cursorPos );
 		var pendingBlock = block ? { start: block.start, end: block.end } : null;
+		var onInsert = function ( wikitext ) {
+			applyResult( textarea, pendingBlock, wikitext );
+		};
 
 		if ( !block ) {
 			var mismatchLabel = findOtherSchemaBlockLabel( textarea.value, cursorPos, schema.id, allSchemas );
-			buildOverlay( schema, textarea, pendingBlock, {}, [ {} ], { preFilled: false, mismatchLabel: mismatchLabel } );
+			buildOverlay( schema, {}, [ {} ], { preFilled: false, mismatchLabel: mismatchLabel, onInsert: onInsert } );
 			return;
 		}
 
-		buildOverlay( schema, textarea, pendingBlock, {}, [ {} ], { loading: true } );
+		buildOverlay( schema, {}, [ {} ], { loading: true } );
 		api.post( {
 			action: 'infothequecore',
 			op: 'parseexisting',
@@ -205,12 +208,13 @@
 			formatversion: 2
 		} ).done( function ( data ) {
 			var rows = ( data.rows && data.rows.length ) ? data.rows : [ {} ];
-			buildOverlay( schema, textarea, pendingBlock, data.title || {}, rows, {
+			buildOverlay( schema, data.title || {}, rows, {
 				preFilled: true,
-				mismatchLabel: data.possibleMismatch || null
+				mismatchLabel: data.possibleMismatch || null,
+				onInsert: onInsert
 			} );
 		} ).fail( function () {
-			buildOverlay( schema, textarea, pendingBlock, {}, [ {} ], { preFilled: false } );
+			buildOverlay( schema, {}, [ {} ], { preFilled: false, onInsert: onInsert } );
 		} );
 	}
 
@@ -228,8 +232,15 @@
 	 * (options.loading=true) while an existing block is being fetched/
 	 * parsed, then again with the real pre-filled data once that resolves
 	 * (options.preFilled=true, so initial rows start locked).
+	 *
+	 * Caller-agnostic: knows nothing about where the result ends up.
+	 * options.onInsert(wikitext) is called with the generated wikitext
+	 * once validated — the source-mode textarea glue (openAssistant,
+	 * below) and the VisualEditor glue (ext.infothequeCore.ve.js) each
+	 * supply their own, since "insert" means something different in each
+	 * (splice a string vs. update a transclusion model).
 	 */
-	function buildOverlay( schema, textarea, pendingBlock, titleValues, rowsValues, options ) {
+	function buildOverlay( schema, titleValues, rowsValues, options ) {
 		options = options || {};
 		closeOverlay();
 
@@ -333,7 +344,7 @@
 		insertBtn.className = 'ithc-btn-primary';
 		insertBtn.textContent = mw.msg( 'infothequecore-insert-button' );
 		insertBtn.addEventListener( 'click', function () {
-			doInsert( schema, textarea, pendingBlock, titleContainer, tbody, errorsEl, insertBtn );
+			doInsert( schema, titleContainer, tbody, errorsEl, insertBtn, options.onInsert );
 		} );
 		actions.appendChild( insertBtn );
 		modal.appendChild( actions );
@@ -1110,7 +1121,7 @@
 		return String( code );
 	}
 
-	function doInsert( schema, textarea, pendingBlock, titleContainer, tbody, errorsEl, insertBtn ) {
+	function doInsert( schema, titleContainer, tbody, errorsEl, insertBtn, onInsert ) {
 		var titleValues = collectFields( titleContainer );
 		var rowsValues = collectRows( tbody );
 
@@ -1130,7 +1141,11 @@
 				showErrors( errorsEl, data.validationErrors );
 				return;
 			}
-			applyResult( textarea, pendingBlock, data.wikitext );
+			// structured: per-field wikitext values, not just the flattened
+			// string — only consumed by the VisualEditor bridge, which
+			// builds transclusion params directly from it instead of
+			// re-splitting the flattened wikitext string in JS.
+			onInsert( data.wikitext, data.structured );
 			closeOverlay();
 		} ).fail( function ( code, err ) {
 			insertBtn.disabled = false;
@@ -1156,4 +1171,14 @@
 	} else {
 		init();
 	}
+
+	// Shared with ext.infothequeCore.ve.js (VisualEditor integration),
+	// which declares a dependency on this module so it can reuse the same
+	// overlay/widgets instead of duplicating them — only the "insert"
+	// glue differs per editing surface (options.onInsert).
+	mw.libs = mw.libs || {};
+	mw.libs.infothequeCore = {
+		buildOverlay: buildOverlay,
+		closeOverlay: closeOverlay
+	};
 }() );

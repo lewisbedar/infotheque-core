@@ -44,7 +44,7 @@ class ApiInfothequeCore extends ApiBase {
 
 		try {
 			if ( $params['op'] === 'parseexisting' ) {
-				$this->doParseExisting( $schema, (string)$params['raw'] );
+				$this->doParseExisting( $schema, (string)$params['raw'], (string)$params['params'] );
 				return;
 			}
 			$this->doGenerate( $schema, (string)$params['title'], (string)$params['rows'] );
@@ -55,9 +55,23 @@ class ApiInfothequeCore extends ApiBase {
 		}
 	}
 
-	private function doParseExisting( FormSchema $schema, string $raw ): void {
+	/**
+	 * @param FormSchema $schema
+	 * @param string $raw Raw "{{Name|...}}" wikitext — the source-mode path.
+	 * @param string $paramsJson JSON object of already-split "paramName":
+	 *   "raw wikitext value" pairs — the VisualEditor path, whose
+	 *   transclusion model has params pre-split (Parsoid did that when the
+	 *   page loaded), skipping the need to re-derive it here. Takes
+	 *   priority over $raw when non-empty.
+	 */
+	private function doParseExisting( FormSchema $schema, string $raw, string $paramsJson ): void {
 		$parser = new ExistingBlockParser();
-		$parsed = $parser->parse( $schema, $raw );
+		if ( $paramsJson !== '' ) {
+			$params = $this->decodeAssoc( $paramsJson );
+			$parsed = $parser->parseParams( $schema, $params );
+		} else {
+			$parsed = $parser->parse( $schema, $raw );
+		}
 		$result = $this->getResult();
 		$result->addValue( null, 'title', (object)( $parsed['title'] ?? [] ) );
 		$result->addValue( null, 'rows', $parsed['rows'] ?? [] );
@@ -69,7 +83,9 @@ class ApiInfothequeCore extends ApiBase {
 		// surface that so the JS can warn before the user edits it.
 		$sibling = SchemaRegistry::sibling( $schema->id );
 		if ( $sibling !== null ) {
-			$siblingParsed = $parser->parse( $sibling, $raw );
+			$siblingParsed = $paramsJson !== ''
+				? $parser->parseParams( $sibling, $this->decodeAssoc( $paramsJson ) )
+				: $parser->parse( $sibling, $raw );
 			if ( $siblingParsed !== null
 				&& $this->countFilledFields( $siblingParsed ) > $this->countFilledFields( $parsed ?? [] )
 			) {
@@ -109,8 +125,19 @@ class ApiInfothequeCore extends ApiBase {
 			return;
 		}
 
-		$wikitext = ( new WikitextGenerator() )->generate( $schema, $titleValues, $rowsValues );
+		$generator = new WikitextGenerator();
+		$wikitext = $generator->generate( $schema, $titleValues, $rowsValues );
 		$result->addValue( null, 'wikitext', $wikitext );
+
+		// Structured (per-field, already-wikitext-transformed) values
+		// alongside the flattened string — the VisualEditor bridge builds
+		// its transclusion params directly from this instead of having to
+		// re-split the flattened wikitext string back apart in JS.
+		$structured = $generator->collect( $schema, $titleValues, $rowsValues );
+		$result->addValue( null, 'structured', [
+			'title' => (object)$structured['title'],
+			'rows' => $structured['rows'],
+		] );
 	}
 
 	/** @return array<string,string> */
@@ -148,6 +175,10 @@ class ApiInfothequeCore extends ApiBase {
 				ParamValidator::PARAM_DEFAULT => '[]',
 			],
 			'raw' => [
+				ParamValidator::PARAM_TYPE => 'string',
+				ParamValidator::PARAM_DEFAULT => '',
+			],
+			'params' => [
 				ParamValidator::PARAM_TYPE => 'string',
 				ParamValidator::PARAM_DEFAULT => '',
 			],

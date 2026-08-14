@@ -83,6 +83,20 @@
 				"mediawiki.util",
 				"mediawiki.api"
 			]
+		},
+		"ext.infothequeCore.ve": {
+			"localBasePath": "resources",
+			"remoteExtPath": "InfothequeCore/resources",
+			"scripts": [
+				"ext.infothequeCore.ve.js"
+			],
+			"dependencies": [
+				"ext.infothequeCore.editorButton",
+				"ext.visualEditor.mwcore"
+			],
+			"messages": [
+				"infothequecore-editor-trigger"
+			]
 		}
 	},
 	"APIModules": {
@@ -91,5 +105,12 @@
 	"Hooks": {
 		"EditPage::showEditForm:initial": "MediaWiki\\Extension\\InfothequeCore\\Hooks::onEditPageShowEditFormInitial",
 		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\InfothequeCore\\Hooks::onLoadExtensionSchemaUpdates"
+	},
+	"attributes": {
+		"VisualEditor": {
+			"PluginModules": [
+				"ext.infothequeCore.ve"
+			]
+		}
 	}
 }

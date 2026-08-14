@@ -31,17 +31,7 @@ class ExistingBlockParser {
 		}
 		$inner = substr( $raw, strlen( $prefix ), -2 );
 
-		$fieldsByKey = [];
-		foreach ( $schema->titleFields as $field ) {
-			$fieldsByKey[ $field->key ] = $field;
-		}
-		foreach ( $schema->rowFields as $field ) {
-			$fieldsByKey[ $field->key ] = $field;
-		}
-
-		$title = [];
-		$rowsByNumber = [];
-
+		$params = [];
 		foreach ( $this->splitParams( $inner ) as $chunk ) {
 			$chunk = ltrim( $chunk, "|\n\r\t " );
 			$eq = strpos( $chunk, '=' );
@@ -53,7 +43,40 @@ class ExistingBlockParser {
 			if ( $rawValue === '' ) {
 				continue;
 			}
+			$params[ $paramName ] = $rawValue;
+		}
 
+		return $this->parseParams( $schema, $params );
+	}
+
+	/**
+	 * Same as parse(), but starting from already-split "paramName => raw
+	 * wikitext value" pairs instead of one raw "{{Name|...}}" string —
+	 * used by the VisualEditor bridge, whose transclusion model already
+	 * has parameters split (Parsoid did that splitting when the page was
+	 * first loaded), so re-deriving it via splitParams() would be
+	 * redundant work duplicating logic that already ran once.
+	 *
+	 * @param FormSchema $schema
+	 * @param array<string,string> $params
+	 * @return array{title: array<string,string>, rows: list<array<string,string>>}
+	 */
+	public function parseParams( FormSchema $schema, array $params ): array {
+		$fieldsByKey = [];
+		foreach ( $schema->titleFields as $field ) {
+			$fieldsByKey[ $field->key ] = $field;
+		}
+		foreach ( $schema->rowFields as $field ) {
+			$fieldsByKey[ $field->key ] = $field;
+		}
+
+		$title = [];
+		$rowsByNumber = [];
+
+		foreach ( $params as $paramName => $rawValue ) {
+			if ( $rawValue === '' ) {
+				continue;
+			}
 			if ( preg_match( '/^([a-zA-Z]+)(\d+)$/', $paramName, $m ) ) {
 				[ , $key, $rowNumber ] = $m;
 				if ( !isset( $fieldsByKey[ $key ] ) ) {
