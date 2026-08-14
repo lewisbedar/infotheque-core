@@ -1131,6 +1131,17 @@
 	 * temporarily demotes our own overlay while the upload dialog is
 	 * open, letting OOUI's normal (already-correct-on-every-other-page)
 	 * stacking just work, without needing to know its internals.
+	 *
+	 * "fileSaved" is emitted by the dialog's internal uploadBooklet
+	 * (mw.Upload.BookletLayout), not by the dialog itself — confirmed by
+	 * reading MediaWiki core's mediawiki.Upload.Dialog.js, which only
+	 * relays "set"/"uploadValid"/"infoValid" from the booklet, not
+	 * "fileSaved". Listening on the dialog directly (as this used to)
+	 * meant the event was never heard, so the field never got filled in
+	 * automatically after a successful upload. uploadBooklet only exists
+	 * once the window has actually opened (it's created in the dialog's
+	 * initialize(), part of the open lifecycle), hence waiting on
+	 * openWindow()'s own promise before attaching the listener.
 	 */
 	function openUploadDialog( onSuccess ) {
 		mw.loader.using( 'mediawiki.Upload.Dialog' ).done( function () {
@@ -1143,10 +1154,15 @@
 				currentOverlay.classList.add( 'ithc-form-overlay-below-upload' );
 			}
 
-			uploadDialog.on( 'fileSaved', function ( imageInfo ) {
-				onSuccess( ( imageInfo.canonicaltitle || '' ).replace( /^(Fichier|File)\s*:\s*/i, '' ) );
+			var lifecycle = windowManager.openWindow( uploadDialog );
+			lifecycle.opened.then( function () {
+				if ( uploadDialog.uploadBooklet ) {
+					uploadDialog.uploadBooklet.on( 'fileSaved', function ( imageInfo ) {
+						onSuccess( ( imageInfo.canonicaltitle || '' ).replace( /^(Fichier|File)\s*:\s*/i, '' ) );
+					} );
+				}
 			} );
-			windowManager.openWindow( uploadDialog ).closed.then( function () {
+			lifecycle.closed.then( function () {
 				windowManager.$element.remove();
 				windowManager.destroy();
 				if ( currentOverlay ) {
