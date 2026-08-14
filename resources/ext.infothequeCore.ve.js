@@ -160,23 +160,47 @@
 			return;
 		}
 
-		var items = SCHEMA_IDS.filter( function ( id ) {
-			return !!schemas[ id ];
-		} ).map( function ( id ) {
-			return new OO.ui.MenuOptionWidget( { data: id, label: schemas[ id ].label } );
+		showSchemaPicker( schemas, function ( schema ) {
+			openForSchema( surface, schema, null );
 		} );
-		var menu = new OO.ui.MenuSelectWidget( { items: items } );
-		document.body.appendChild( menu.$element[ 0 ] );
-		menu.toggle( true );
-		menu.on( 'choose', function ( item ) {
-			menu.$element.remove();
-			openForSchema( surface, schemas[ item.getData() ], null );
-		} );
-		menu.on( 'toggle', function ( shown ) {
-			if ( !shown ) {
-				menu.$element.remove();
+	}
+
+	/**
+	 * Plain-DOM centered picker (same visual language as the source-mode
+	 * dropdown's .ithc-dropdown-item, see ext.infothequeCore.editorButton.css)
+	 * — used instead of a bare OO.ui.MenuSelectWidget, which rendered with
+	 * no usable size/position when appended without a floatable anchor.
+	 */
+	function showSchemaPicker( schemas, onChoose ) {
+		var overlay = document.createElement( 'div' );
+		overlay.className = 'ithc-ve-picker-overlay';
+		overlay.addEventListener( 'click', function ( e ) {
+			if ( e.target === overlay ) {
+				overlay.remove();
 			}
 		} );
+
+		var panel = document.createElement( 'div' );
+		panel.className = 'ithc-ve-picker-panel';
+		overlay.appendChild( panel );
+
+		SCHEMA_IDS.forEach( function ( id ) {
+			var schema = schemas[ id ];
+			if ( !schema ) {
+				return;
+			}
+			var item = document.createElement( 'button' );
+			item.type = 'button';
+			item.className = 'ithc-dropdown-item';
+			item.textContent = schema.label;
+			item.addEventListener( 'click', function () {
+				overlay.remove();
+				onChoose( schema );
+			} );
+			panel.appendChild( item );
+		} );
+
+		document.body.appendChild( overlay );
 	}
 
 	// ---- ve.ui.Action / Command / Tool registration -------------------------
