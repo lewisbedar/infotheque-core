@@ -145,15 +145,10 @@ class SchemaRegistry {
 			id: 'manuels',
 			labelMsg: 'infothequecore-form-manuels',
 			templateName: 'Téléchargements',
-			titleFields: [
-				new FieldDefinition(
-					key: 'titre',
-					widget: FieldWidget::Text,
-					labelMsg: 'infothequecore-field-titre',
-					helpMsg: 'infothequecore-field-titre-help',
-					example: 'Documentation'
-				),
-			],
+			// No title field: keep the wiki's own default (« Documentation
+			// archivée de [nom de la page] ») rather than letting the form
+			// override it — same convention as Téléchargements-logiciels.
+			titleFields: [],
 			rowFields: [
 				new FieldDefinition(
 					key: 'edition',
@@ -173,6 +168,13 @@ class SchemaRegistry {
 					widget: FieldWidget::Textarea,
 					labelMsg: 'infothequecore-field-description',
 					helpMsg: 'infothequecore-field-description-help'
+				),
+				new FieldDefinition(
+					key: 'format',
+					widget: FieldWidget::File,
+					labelMsg: 'infothequecore-field-format-document',
+					helpMsg: 'infothequecore-field-format-document-help',
+					wikitextWrap: '[[Fichier:%s|centré]]'
 				),
 				new FieldDefinition(
 					key: 'liens',

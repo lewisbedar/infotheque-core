@@ -15,7 +15,6 @@
 	"infothequecore-form-pilotes": "Drivers",
 
 	"infothequecore-field-titre": "Table title",
-	"infothequecore-field-titre-help": "Leave empty for the default title (\"Archived versions of [page name]\").",
 	"infothequecore-field-edition": "Edition",
 	"infothequecore-field-version": "Version",
 	"infothequecore-field-langue": "Language",
@@ -29,6 +28,8 @@
 	"infothequecore-field-liens": "Download links",
 	"infothequecore-field-liens-help": "Add a URL and a name for each link.",
 	"infothequecore-field-nom-document": "Document name",
+	"infothequecore-field-format-document": "Document type icon",
+	"infothequecore-field-format-document-help": "Pick the icon file representing the document type (PDF, image...) — the wiki link is generated automatically.",
 	"infothequecore-field-variante": "Variant",
 	"infothequecore-field-processeur": "Processor",
 	"infothequecore-field-ram": "Memory",
