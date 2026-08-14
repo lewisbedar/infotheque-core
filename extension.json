@@ -17,6 +17,17 @@
 	"SpecialPages": {
 		"InfothequeCore": {
 			"class": "MediaWiki\\Extension\\InfothequeCore\\SpecialInfothequeCore"
+		},
+		"InfothequeCoreOptions": {
+			"class": "MediaWiki\\Extension\\InfothequeCore\\Special\\SpecialInfothequeCoreOptions"
+		}
+	},
+	"AvailableRights": [
+		"ithc-manage-options"
+	],
+	"GroupPermissions": {
+		"sysop": {
+			"ithc-manage-options": true
 		}
 	},
 	"MessagesDirs": {
@@ -76,6 +87,7 @@
 		"infothequecore": "MediaWiki\\Extension\\InfothequeCore\\Api\\ApiInfothequeCore"
 	},
 	"Hooks": {
-		"EditPage::showEditForm:initial": "MediaWiki\\Extension\\InfothequeCore\\Hooks::onEditPageShowEditFormInitial"
+		"EditPage::showEditForm:initial": "MediaWiki\\Extension\\InfothequeCore\\Hooks::onEditPageShowEditFormInitial",
+		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\InfothequeCore\\Hooks::onLoadExtensionSchemaUpdates"
 	}
 }

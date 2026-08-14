@@ -2,6 +2,8 @@
 
 namespace MediaWiki\Extension\InfothequeCore\Schema;
 
+use MediaWiki\Extension\InfothequeCore\Options\OptionListStore;
+
 /**
  * Central source of truth for the field conventions of each wikitext
  * template covered by the assistant. Mirrored from the live TemplateData
@@ -73,7 +75,7 @@ class SchemaRegistry {
 					key: 'langue',
 					widget: FieldWidget::MultiSelect,
 					labelMsg: 'infothequecore-field-langue',
-					suggestedValues: [ 'Français', 'Anglais', 'Allemand', 'Espagnol', 'Italien', 'Multilingue' ]
+					suggestedValues: self::langueSuggestions()
 				),
 				new FieldDefinition(
 					key: 'description',
@@ -114,14 +116,34 @@ class SchemaRegistry {
 		);
 	}
 
+	/** @return list<string> */
+	private static function langueSuggestions(): array {
+		$stored = OptionListStore::getLabels( 'langue' );
+		return $stored !== [] ? $stored : [ 'Français', 'Anglais', 'Allemand', 'Espagnol', 'Italien', 'Multilingue' ];
+	}
+
+	/** @return list<string> */
+	private static function piloteTypeSuggestions(): array {
+		$stored = OptionListStore::getLabels( 'pilotes-types' );
+		return $stored !== [] ? $stored : [ 'Chipset', 'Graphique', 'Son', 'Réseau', 'Modem', 'Stockage', 'Autre' ];
+	}
+
 	/**
-	 * Support icons, mirroring the existing "+ Ajouter un téléchargement"
-	 * gadget's ITH_DL_FORMATS table (MediaWiki:Common.js) so both stay
-	 * visually consistent.
+	 * Support icons — managed via Special:InfothequeCoreOptions
+	 * ("support-icons" list); falls back to the values that shipped
+	 * before that page existed (mirroring the old "+ Ajouter un
+	 * téléchargement" gadget's ITH_DL_FORMATS table) if the list is
+	 * empty or the DB table hasn't been created yet.
 	 *
 	 * @return list<array{key:string,label:string,wikitext:string}>
 	 */
 	private static function supportOptions(): array {
+		$stored = OptionListStore::getOptions( 'support-icons' );
+		return $stored !== [] ? $stored : self::defaultSupportOptions();
+	}
+
+	/** @return list<array{key:string,label:string,wikitext:string}> */
+	private static function defaultSupportOptions(): array {
 		return [
 			[
 				'key' => 'disquette',
@@ -157,14 +179,19 @@ class SchemaRegistry {
 	}
 
 	/**
-	 * Document type icons for the Manuels form. Provisional hardcoded
-	 * list (same pattern as supportOptions() above) — to be replaced by
-	 * a backend-managed icon list covering both Téléchargements and
-	 * Manuels once that admin page is built.
+	 * Document type icons for the Manuels form — managed via
+	 * Special:InfothequeCoreOptions ("format-icons" list), same pattern
+	 * as supportOptions() above.
 	 *
 	 * @return list<array{key:string,label:string,wikitext:string}>
 	 */
 	private static function documentFormatOptions(): array {
+		$stored = OptionListStore::getOptions( 'format-icons' );
+		return $stored !== [] ? $stored : self::defaultDocumentFormatOptions();
+	}
+
+	/** @return list<array{key:string,label:string,wikitext:string}> */
+	private static function defaultDocumentFormatOptions(): array {
 		return [
 			[
 				'key' => 'pdf',
@@ -205,7 +232,7 @@ class SchemaRegistry {
 					key: 'langue',
 					widget: FieldWidget::MultiSelect,
 					labelMsg: 'infothequecore-field-langue',
-					suggestedValues: [ 'Français', 'Anglais', 'Allemand', 'Espagnol', 'Italien', 'Multilingue' ]
+					suggestedValues: self::langueSuggestions()
 				),
 				new FieldDefinition(
 					key: 'description',
@@ -302,7 +329,7 @@ class SchemaRegistry {
 					key: 'type',
 					widget: FieldWidget::Combobox,
 					labelMsg: 'infothequecore-field-type-pilote',
-					suggestedValues: [ 'Chipset', 'Graphique', 'Son', 'Réseau', 'Modem', 'Stockage', 'Autre' ]
+					suggestedValues: self::piloteTypeSuggestions()
 				),
 				new FieldDefinition(
 					key: 'os',
