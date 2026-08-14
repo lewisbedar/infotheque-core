@@ -941,7 +941,11 @@
 		mw.loader.using( 'mediawiki.Upload.Dialog' ).done( function () {
 			var uploadDialog = new mw.Upload.Dialog( {} );
 			var windowManager = new OO.ui.WindowManager();
-			windowManager.$element.addClass( 'ithc-upload-window-manager' );
+			// Both the class (see CSS, !important) and this inline style:
+			// OOUI's own stylesheet sets z-index on a two-class selector
+			// that otherwise outranks a single custom class regardless of
+			// load order.
+			windowManager.$element.addClass( 'ithc-upload-window-manager' ).css( 'z-index', 10000 );
 			document.body.appendChild( windowManager.$element[ 0 ] );
 			windowManager.addWindows( [ uploadDialog ] );
 
