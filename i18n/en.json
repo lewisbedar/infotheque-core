@@ -72,6 +72,7 @@
 	"infothequecore-schema-mismatch-warning": "This table looks more like a \"$1\" table. Double-check you picked the right content type before editing.",
 
 	"infothequecore-editor-trigger": "+ Add/edit an Infothèque table",
+	"infothequecore-ve-tool-title": "Infothèque template",
 	"infothequecore-add-row": "+ Add a row",
 	"infothequecore-remove-row": "Remove this row",
 	"infothequecore-loading-existing": "Reading the existing table…",

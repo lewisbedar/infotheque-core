@@ -207,7 +207,7 @@
 	// Lewis supplies the image (per his request), via a custom-registered
 	// OOUI icon rather than this generic one.
 	InfothequeCoreTool.static.icon = 'add';
-	InfothequeCoreTool.static.title = mw.msg( 'infothequecore-editor-trigger' );
+	InfothequeCoreTool.static.title = mw.msg( 'infothequecore-ve-tool-title' );
 	InfothequeCoreTool.static.commandName = 'infothequeCoreOpen';
 	ve.ui.toolFactory.register( InfothequeCoreTool );
 }() );

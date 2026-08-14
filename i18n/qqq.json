@@ -68,6 +68,7 @@
 	"infothequecore-schema-mismatch-warning": "Dismissible warning shown when an existing block, parsed under the chosen schema, recovered fewer field values than parsing it under the sibling schema would have (Téléchargements-logiciels ↔ Manuels, which share Modèle:Téléchargements). $1 is the sibling schema's label.",
 
 	"infothequecore-editor-trigger": "Label of the single trigger button injected in the source editor, which opens the assistant overlay.",
+	"infothequecore-ve-tool-title": "Title of the VisualEditor toolbar tool that opens the same assistant overlay.",
 	"infothequecore-add-row": "Button label to add another dynamic row in the JS overlay form.",
 	"infothequecore-remove-row": "Title/tooltip of the per-row × remove button in the JS overlay form.",
 	"infothequecore-loading-existing": "Shown in the overlay while an existing block found under the cursor is being parsed via the API.",
