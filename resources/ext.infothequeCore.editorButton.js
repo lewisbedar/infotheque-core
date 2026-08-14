@@ -328,7 +328,7 @@
 		return thead;
 	}
 
-	/** A small "?" icon that toggles a floating text bubble on click — more discoverable than a plain hover title. */
+	/** A small "?" icon showing a floating text bubble on hover (and on focus, for keyboard use). */
 	function buildHelpIcon( helpText ) {
 		var icon = document.createElement( 'button' );
 		icon.type = 'button';
@@ -340,27 +340,27 @@
 		bubble.textContent = helpText;
 		bubble.hidden = true;
 
-		icon.addEventListener( 'click', function ( e ) {
-			e.stopPropagation();
-			if ( bubble.hidden ) {
-				var rect = icon.getBoundingClientRect();
-				bubble.hidden = false;
-				var bubbleRect = bubble.getBoundingClientRect();
-				var left = Math.min( rect.left, window.innerWidth - bubbleRect.width - 8 );
-				bubble.style.top = ( rect.bottom + 4 + window.scrollY ) + 'px';
-				bubble.style.left = ( Math.max( left, 8 ) + window.scrollX ) + 'px';
-			} else {
-				bubble.hidden = true;
-			}
-		} );
-		document.addEventListener( 'click', function ( e ) {
-			if ( e.target !== icon ) {
-				bubble.hidden = true;
-			}
-		} );
-		window.addEventListener( 'scroll', function () {
+		function show() {
+			var rect = icon.getBoundingClientRect();
+			bubble.hidden = false;
+			var bubbleRect = bubble.getBoundingClientRect();
+			var left = Math.min( rect.left, window.innerWidth - bubbleRect.width - 8 );
+			bubble.style.top = ( rect.bottom + 4 + window.scrollY ) + 'px';
+			bubble.style.left = ( Math.max( left, 8 ) + window.scrollX ) + 'px';
+		}
+		function hide() {
 			bubble.hidden = true;
-		}, true );
+		}
+
+		icon.addEventListener( 'mouseenter', show );
+		icon.addEventListener( 'mouseleave', hide );
+		icon.addEventListener( 'focus', show );
+		icon.addEventListener( 'blur', hide );
+		// Prevent the icon from acting as a submit-like click target inside the table.
+		icon.addEventListener( 'click', function ( e ) {
+			e.preventDefault();
+		} );
+		window.addEventListener( 'scroll', hide, true );
 
 		var wrap = document.createDocumentFragment();
 		wrap.appendChild( icon );
