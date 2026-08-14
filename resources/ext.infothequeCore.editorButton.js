@@ -101,8 +101,12 @@
 			e.stopPropagation();
 			if ( dropdown.hidden ) {
 				var rect = trigger.getBoundingClientRect();
-				dropdown.style.top = ( rect.bottom + window.scrollY ) + 'px';
-				dropdown.style.left = ( rect.left + window.scrollX ) + 'px';
+				// No + window.scrollY/scrollX: .ithc-dropdown is
+				// position:fixed, whose coordinates are already
+				// viewport-relative, same as getBoundingClientRect()'s —
+				// adding the scroll offset double-counts it.
+				dropdown.style.top = rect.bottom + 'px';
+				dropdown.style.left = rect.left + 'px';
 			}
 			dropdown.hidden = !dropdown.hidden;
 		} );
@@ -408,8 +412,10 @@
 			bubble.hidden = false;
 			var bubbleRect = bubble.getBoundingClientRect();
 			var left = Math.min( rect.left, window.innerWidth - bubbleRect.width - 8 );
-			bubble.style.top = ( rect.bottom + 4 + window.scrollY ) + 'px';
-			bubble.style.left = ( Math.max( left, 8 ) + window.scrollX ) + 'px';
+			// No + window.scrollY/scrollX: .ithc-help-bubble is
+			// position:fixed, see the same note in addTrigger() above.
+			bubble.style.top = ( rect.bottom + 4 ) + 'px';
+			bubble.style.left = Math.max( left, 8 ) + 'px';
 		}
 		function hide() {
 			bubble.hidden = true;
@@ -713,8 +719,14 @@
 				top = rect.top - panelRect.height - 2;
 			}
 			var left = Math.min( rect.left, window.innerWidth - panelRect.width - 8 );
-			panel.style.top = ( top + window.scrollY ) + 'px';
-			panel.style.left = ( Math.max( left, 8 ) + window.scrollX ) + 'px';
+			// No + window.scrollY/scrollX: .ithc-multiselect-panel is
+			// position:fixed, see the same note in addTrigger() above. This
+			// was the actual bug behind the panel opening far off-screen in
+			// VisualEditor (deep-scrolled pages made the double-counted
+			// offset huge) — it was always wrong, just not visible in
+			// source mode, where the trigger sits near the top of the page.
+			panel.style.top = top + 'px';
+			panel.style.left = Math.max( left, 8 ) + 'px';
 			panel.style.minWidth = rect.width + 'px';
 		}
 
