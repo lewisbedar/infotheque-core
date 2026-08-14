@@ -422,7 +422,14 @@
 
 .ithc-help-bubble {
 	position: fixed;
-	z-index: 40;
+	/* Above .ithc-form-overlay's 9999: position:fixed escapes the overlay's
+	   DOM nesting and competes at the page's top stacking level, so on a
+	   page with its own high-z-index chrome (VisualEditor's toolbar/
+	   surface) a low value here rendered invisibly behind it — only
+	   noticeable there since plain source-mode edit pages have nothing
+	   competing. Same root cause fixed below for the multiselect panel
+	   and file-search suggestions. */
+	z-index: 10000;
 	max-width: 260px;
 	padding: 8px 10px;
 	background: #1f2328;
@@ -509,7 +516,7 @@
 
 .ithc-multiselect-panel {
 	position: fixed;
-	z-index: 30;
+	z-index: 10000;
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
