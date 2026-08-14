@@ -105,6 +105,7 @@
 	},
 	"Hooks": {
 		"EditPage::showEditForm:initial": "MediaWiki\\Extension\\InfothequeCore\\Hooks::onEditPageShowEditFormInitial",
+		"BeforePageDisplay": "MediaWiki\\Extension\\InfothequeCore\\Hooks::onBeforePageDisplay",
 		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\InfothequeCore\\Hooks::onLoadExtensionSchemaUpdates"
 	},
 	"attributes": {

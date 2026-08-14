@@ -22,6 +22,21 @@ class Hooks {
 	}
 
 	/**
+	 * Exports ithcSchemas on every page view, not just classic source-mode
+	 * edit form renders — EditPage::showEditForm:initial above doesn't
+	 * fire when a page is opened directly into VisualEditor, so
+	 * ext.infothequeCore.ve.js (loaded by VE itself as a plugin module)
+	 * had no schema data to work with. Cheap pure computation, no DB
+	 * calls, so exporting it unconditionally isn't worth gating further.
+	 *
+	 * @param mixed $out OutputPage
+	 * @param mixed $skin Skin
+	 */
+	public static function onBeforePageDisplay( $out, $skin ): void {
+		$out->addJsConfigVars( 'ithcSchemas', SchemaExporter::exportAll() );
+	}
+
+	/**
 	 * Creates the ithc_options table (Support/Format icons, Langue,
 	 * Pilotes types managed via Special:InfothequeCoreOptions) and seeds
 	 * it with the values that shipped hardcoded before that page existed,
