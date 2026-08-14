@@ -589,6 +589,13 @@
 	background: #eef3ff;
 }
 
+/* Above .ithc-form-overlay's z-index:9999 — OOUI's WindowManager defaults
+   to a much lower stacking context, so the upload dialog rendered behind
+   our overlay until this was raised explicitly. */
+.ithc-upload-window-manager {
+	z-index: 10000;
+}
+
 .ithc-file-suggestions {
 	position: absolute;
 	z-index: 5;

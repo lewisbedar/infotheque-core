@@ -941,6 +941,7 @@
 		mw.loader.using( 'mediawiki.Upload.Dialog' ).done( function () {
 			var uploadDialog = new mw.Upload.Dialog( {} );
 			var windowManager = new OO.ui.WindowManager();
+			windowManager.$element.addClass( 'ithc-upload-window-manager' );
 			document.body.appendChild( windowManager.$element[ 0 ] );
 			windowManager.addWindows( [ uploadDialog ] );
 
