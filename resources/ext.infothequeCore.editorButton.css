@@ -620,12 +620,11 @@
 	padding: 0 4px;
 }
 
-/* Above .ithc-form-overlay's z-index:9999. !important because OOUI's own
-   core stylesheet sets z-index on ".oo-ui-windowManager.oo-ui-windowManager-
-   modal" (two classes = higher specificity than ours), so a plain rule
-   here lost regardless of load order. */
-.ithc-upload-window-manager {
-	z-index: 10000 !important;
+/* Raising the upload dialog's own z-index above .ithc-form-overlay's 9999
+   didn't work (tried, confirmed live), so instead this demotes our own
+   overlay while the dialog is open — see openUploadDialog() in JS. */
+.ithc-form-overlay-below-upload {
+	z-index: 1 !important;
 }
 
 .ithc-file-suggestions {

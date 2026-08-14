@@ -1044,18 +1044,27 @@
 		} );
 	}
 
-	/** Opens MediaWiki's own upload dialog; on success, calls `onSuccess(bareFileName)`. */
+	/**
+	 * Opens MediaWiki's own upload dialog; on success, calls
+	 * `onSuccess(bareFileName)`.
+	 *
+	 * Raising the WindowManager's own z-index (tried first) didn't beat
+	 * .ithc-form-overlay's — OOUI's dialog apparently doesn't compare
+	 * against a wrapper's z-index the way that implies, so instead this
+	 * temporarily demotes our own overlay while the upload dialog is
+	 * open, letting OOUI's normal (already-correct-on-every-other-page)
+	 * stacking just work, without needing to know its internals.
+	 */
 	function openUploadDialog( onSuccess ) {
 		mw.loader.using( 'mediawiki.Upload.Dialog' ).done( function () {
 			var uploadDialog = new mw.Upload.Dialog( {} );
 			var windowManager = new OO.ui.WindowManager();
-			// Both the class (see CSS, !important) and this inline style:
-			// OOUI's own stylesheet sets z-index on a two-class selector
-			// that otherwise outranks a single custom class regardless of
-			// load order.
-			windowManager.$element.addClass( 'ithc-upload-window-manager' ).css( 'z-index', 10000 );
 			document.body.appendChild( windowManager.$element[ 0 ] );
 			windowManager.addWindows( [ uploadDialog ] );
+
+			if ( currentOverlay ) {
+				currentOverlay.classList.add( 'ithc-form-overlay-below-upload' );
+			}
 
 			uploadDialog.on( 'fileSaved', function ( imageInfo ) {
 				onSuccess( ( imageInfo.canonicaltitle || '' ).replace( /^(Fichier|File)\s*:\s*/i, '' ) );
@@ -1063,6 +1072,9 @@
 			windowManager.openWindow( uploadDialog ).closed.then( function () {
 				windowManager.$element.remove();
 				windowManager.destroy();
+				if ( currentOverlay ) {
+					currentOverlay.classList.remove( 'ithc-form-overlay-below-upload' );
+				}
 			} );
 		} );
 	}
