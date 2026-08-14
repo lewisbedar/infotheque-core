@@ -727,23 +727,25 @@
 		function openPanel() {
 			panel.hidden = false;
 			positionPanel();
-			// Deferred: attaching this synchronously let the very click that
-			// opened the panel immediately bubble into it and close the
-			// panel right back — observed only inside VisualEditor, never
-			// on a plain source-mode edit page (its own click handling
-			// evidently interacts with this differently). Deferring by a
-			// tick sidesteps needing to know exactly why.
+			// Deferred: attaching these synchronously let the very click
+			// (and, in VisualEditor, an incidental scroll it seems to
+			// trigger — VE apparently auto-adjusts scroll when a field
+			// like this gains focus/is clicked) that opened the panel
+			// immediately re-trigger one of these and close it right back.
+			// Only ever observed inside VisualEditor, never source mode.
+			// Deferring both by a tick sidesteps needing to know exactly
+			// why either fires the way it does there.
 			setTimeout( function () {
 				document.addEventListener( 'click', outsideClick );
+				window.addEventListener( 'scroll', closePanel, true );
 			}, 0 );
 		}
 
 		function closePanel() {
 			panel.hidden = true;
 			document.removeEventListener( 'click', outsideClick );
+			window.removeEventListener( 'scroll', closePanel, true );
 		}
-
-		window.addEventListener( 'scroll', closePanel, true );
 
 		container.appendChild( wrap );
 		return markField( wrap, field, function () {
