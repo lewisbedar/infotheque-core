@@ -57,7 +57,7 @@ class SchemaRegistry {
 					key: 'langue',
 					widget: FieldWidget::MultiSelect,
 					labelMsg: 'infothequecore-field-langue',
-					suggestedValues: [ 'Français', 'Anglais', 'Allemand', 'Espagnol', 'Italien' ]
+					suggestedValues: [ 'Français', 'Anglais', 'Allemand', 'Espagnol', 'Italien', 'Multilingue' ]
 				),
 				new FieldDefinition(
 					key: 'description',

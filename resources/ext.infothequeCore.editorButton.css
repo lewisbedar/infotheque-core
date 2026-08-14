@@ -286,15 +286,15 @@
 .ithc-row-actions-cell button {
 	border: none;
 	background: none;
-	font-size: 15px;
+	font-size: 19px;
 	line-height: 1;
 	cursor: pointer;
 	color: #767f8c;
-	padding: 3px 4px;
+	padding: 5px 6px;
 }
 
 .ithc-row-remove {
-	font-size: 18px;
+	font-size: 22px;
 	color: #c0392b;
 }
 
