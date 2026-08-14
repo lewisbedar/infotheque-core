@@ -188,15 +188,20 @@
 	padding: 6px 8px;
 }
 
-/* Spreadsheet-like cells: the input IS the cell. height:100% doesn't
+/* Spreadsheet-like cells: the field IS the cell. height:100% doesn't
    work here — a table cell's height is content-derived ("auto"), and
    percentage heights don't resolve against an auto-height containing
-   block, so it silently did nothing. Positioning the field absolutely
-   against the cell (position:relative) fills the cell's actual
-   rendered box exactly, regardless of what height the row ends up at
-   (driven by any taller cell, e.g. a textarea, in the same row). */
+   block. Positioning fields absolutely against the cell
+   (position:relative) fills its actual rendered box exactly, whatever
+   height the row ends up at (driven by Description/Licence/Liens,
+   the only fields left in normal flow so they can grow the row).
+   Single-line controls (text input, Support, Langue) are then
+   flex-centered within that box at their natural height instead of
+   being stretched — a <select> stretched to a tall row's height
+   renders badly. */
 .ithc-rows-table td {
 	position: relative;
+	min-height: 2.6em;
 }
 
 .ithc-rows-table td > input.ithc-field-input,
@@ -205,10 +210,20 @@
 	position: absolute;
 	inset: 0;
 	margin: 0;
+	display: flex;
+	align-items: center;
+}
+
+.ithc-rows-table td > input.ithc-field-input {
+	padding: 6px 8px;
+}
+
+.ithc-rows-table .ithc-select-wrap,
+.ithc-rows-table .ithc-multiselect-wrap {
+	padding: 0 6px;
 }
 
 .ithc-rows-table .ithc-field-input {
-	padding: 6px 8px;
 	border: none;
 	border-radius: 0;
 	background: transparent;
@@ -218,7 +233,6 @@
 .ithc-rows-table .ithc-select-wrap select,
 .ithc-rows-table .ithc-multiselect-wrap button {
 	width: 100%;
-	height: 100%;
 }
 
 .ithc-rows-table .ithc-field-input:focus {
@@ -227,15 +241,18 @@
 	background: #f5f8ff;
 }
 
-/* Textareas (description/licence) stay in normal flow instead of being
-   absolutely filled — they're inherently multi-line and need to be able
-   to grow the row, not be pinned to whatever height it already is. */
+/* Textareas (Description/Licence) DO fill the cell height — unlike a
+   <select> a multi-line box growing to fill extra space still looks
+   normal, and this is what lets the row grow taller in the first
+   place when there's more to type. */
 .ithc-rows-table td > textarea.ithc-field-input {
-	position: static;
+	position: absolute;
+	inset: 0;
 	display: block;
 	width: 100%;
-	min-height: 3.2em;
-	resize: vertical;
+	height: 100%;
+	min-height: 2.6em;
+	overflow-y: auto;
 }
 
 /* Buttons (the Langue dropdown trigger) keep native OS chrome even with
@@ -249,11 +266,9 @@
 	cursor: pointer;
 }
 
-/* Composite widgets (select/multiselect/links/file) keep a little
-   breathing room instead of going fully edge-to-edge, since they hold
-   more than a single line of raw text. */
-.ithc-rows-table .ithc-select-wrap,
-.ithc-rows-table .ithc-multiselect-wrap,
+/* Liens/Photo stay in normal flow (like Description/Licence) since they
+   can hold several stacked rows of their own — a little breathing room
+   instead of going fully edge-to-edge. */
 .ithc-rows-table .ithc-links-wrap,
 .ithc-rows-table .ithc-file-wrap {
 	display: block;
