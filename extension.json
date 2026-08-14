@@ -107,10 +107,8 @@
 		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\InfothequeCore\\Hooks::onLoadExtensionSchemaUpdates"
 	},
 	"attributes": {
-		"VisualEditor": {
-			"PluginModules": [
-				"ext.infothequeCore.ve"
-			]
-		}
+		"VisualEditorPluginModules": [
+			"ext.infothequeCore.ve"
+		]
 	}
 }
