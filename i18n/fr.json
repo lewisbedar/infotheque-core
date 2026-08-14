@@ -62,7 +62,7 @@
 	"infothequecore-view-page": "Voir la page",
 	"infothequecore-error-no-rows": "Ajoutez au moins une ligne avant de continuer.",
 	"infothequecore-error-field-required": "Ligne $1 : le champ « $2 » est obligatoire.",
-	"infothequecore-schema-mismatch-warning": "Ce tableau ressemble plutôt à un tableau « $1 ». Vérifie que tu as choisi le bon type de contenu avant de modifier.",
+	"infothequecore-schema-mismatch-warning": "Ce tableau ressemble plutôt à un tableau « $1 ». Vérifiez que vous avez choisi le bon type de contenu avant de modifier.",
 
 	"infothequecore-editor-trigger": "+ Ajouter/modifier un modèle Infothèque",
 	"infothequecore-add-row": "+ Ajouter une ligne",
