@@ -24,7 +24,7 @@
 	"infothequecore-field-liens": "Field label: download links (structured URL+label builder), reused across Téléchargements-logiciels and Manuels forms (maps to liensN).",
 	"infothequecore-field-liens-help": "Help text for infothequecore-field-liens.",
 	"infothequecore-field-nom-document": "Field label: document name, Manuels form (maps to editionN).",
-	"infothequecore-field-format-document": "Field label: document type icon picker, Manuels form (maps to formatN, wrapped into a [[Fichier:]] link).",
+	"infothequecore-field-format-document": "Field label: document type icon dropdown, Manuels form (maps to formatN, each choice resolves to a fixed [[Fichier:]] link).",
 	"infothequecore-field-format-document-help": "Help text for infothequecore-field-format-document.",
 	"infothequecore-field-variante": "Field label: variant name, Configurations form (maps to varianteN).",
 	"infothequecore-field-processeur": "Field label: processor, Configurations form (maps to processeurN).",

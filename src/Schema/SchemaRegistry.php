@@ -140,6 +140,34 @@ class SchemaRegistry {
 		];
 	}
 
+	/**
+	 * Document type icons for the Manuels form. Provisional hardcoded
+	 * list (same pattern as supportOptions() above) — to be replaced by
+	 * a backend-managed icon list covering both Téléchargements and
+	 * Manuels once that admin page is built.
+	 *
+	 * @return list<array{key:string,label:string,wikitext:string}>
+	 */
+	private static function documentFormatOptions(): array {
+		return [
+			[
+				'key' => 'pdf',
+				'label' => 'PDF',
+				'wikitext' => '[[Fichier:Icône_PDF.png|centré|sans_cadre]]',
+			],
+			[
+				'key' => 'texte',
+				'label' => 'Fichier texte',
+				'wikitext' => '[[Fichier:Notepad_file-2.png|centré|sans_cadre]]',
+			],
+			[
+				'key' => 'word',
+				'label' => 'Fichier Word',
+				'wikitext' => '[[Fichier:Word_002.png|centré|sans_cadre]]',
+			],
+		];
+	}
+
 	private static function manuels(): FormSchema {
 		return new FormSchema(
 			id: 'manuels',
@@ -168,6 +196,13 @@ class SchemaRegistry {
 					widget: FieldWidget::Textarea,
 					labelMsg: 'infothequecore-field-description',
 					helpMsg: 'infothequecore-field-description-help'
+				),
+				new FieldDefinition(
+					key: 'format',
+					widget: FieldWidget::Select,
+					labelMsg: 'infothequecore-field-format-document',
+					helpMsg: 'infothequecore-field-format-document-help',
+					options: self::documentFormatOptions()
 				),
 				new FieldDefinition(
 					key: 'liens',

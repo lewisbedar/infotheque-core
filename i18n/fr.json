@@ -29,7 +29,7 @@
 	"infothequecore-field-liens-help": "Ajoutez une URL et un nom par lien.",
 	"infothequecore-field-nom-document": "Nom du document",
 	"infothequecore-field-format-document": "Icône du type de document",
-	"infothequecore-field-format-document-help": "Choisissez le fichier icône représentant le type de document (PDF, image...) — le lien wiki est généré automatiquement.",
+	"infothequecore-field-format-document-help": "Choisissez le type de document ; l'icône correspondante est insérée automatiquement.",
 	"infothequecore-field-variante": "Variante",
 	"infothequecore-field-processeur": "Processeur",
 	"infothequecore-field-ram": "Mémoire",
