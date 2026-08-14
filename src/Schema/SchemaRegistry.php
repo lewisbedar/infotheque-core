@@ -163,12 +163,6 @@ class SchemaRegistry {
 					example: 'Manuel utilisateur'
 				),
 				new FieldDefinition(
-					key: 'version',
-					widget: FieldWidget::Text,
-					labelMsg: 'infothequecore-field-edition-document',
-					example: '2ᵉ édition, 2001'
-				),
-				new FieldDefinition(
 					key: 'langue',
 					widget: FieldWidget::Combobox,
 					labelMsg: 'infothequecore-field-langue',
@@ -181,19 +175,11 @@ class SchemaRegistry {
 					helpMsg: 'infothequecore-field-description-help'
 				),
 				new FieldDefinition(
-					key: 'format',
-					widget: FieldWidget::File,
-					labelMsg: 'infothequecore-field-format-document',
-					helpMsg: 'infothequecore-field-format-document-help',
-					wikitextWrap: '[[Fichier:%s|centré]]'
-				),
-				new FieldDefinition(
 					key: 'liens',
-					widget: FieldWidget::Textarea,
+					widget: FieldWidget::Links,
 					labelMsg: 'infothequecore-field-liens',
 					required: true,
-					helpMsg: 'infothequecore-field-liens-help',
-					rawWikitext: true
+					helpMsg: 'infothequecore-field-liens-help'
 				),
 			],
 			rowKeyField: 'edition'

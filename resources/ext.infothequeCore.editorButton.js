@@ -31,9 +31,12 @@
 	'use strict';
 
 	var SCHEMA_IDS = [ 'telechargements-logiciels', 'manuels', 'configurations', 'pilotes' ];
-	// Relative column widths (%) for known fields — gives more room to
+	// Relative column weights for known fields — gives more room to
 	// "édition" and less to short fields like "version"/"langue". Anything
-	// not listed (other schemas, for now) falls back to an even share.
+	// not listed falls back to an even share. These are weights, not
+	// percentages: buildColgroup() normalizes them against whichever
+	// fields a given schema actually has, so forms with fewer columns
+	// still fill the table width instead of leaving a gap.
 	var COLUMN_WIDTHS = {
 		edition: 16,
 		version: 7,
@@ -301,9 +304,16 @@
 
 	function buildColgroup( schema ) {
 		var colgroup = document.createElement( 'colgroup' );
-		schema.rowFields.forEach( function ( field ) {
+		var weights = schema.rowFields.map( function ( field ) {
+			return COLUMN_WIDTHS[ field.key ] || DEFAULT_COLUMN_WIDTH;
+		} );
+		var totalWeight = weights.reduce( function ( sum, w ) {
+			return sum + w;
+		}, 0 );
+		var available = 100 - ACTIONS_COLUMN_WIDTH;
+		weights.forEach( function ( weight ) {
 			var col = document.createElement( 'col' );
-			col.style.width = ( COLUMN_WIDTHS[ field.key ] || DEFAULT_COLUMN_WIDTH ) + '%';
+			col.style.width = ( weight / totalWeight * available ) + '%';
 			colgroup.appendChild( col );
 		} );
 		var actionsCol = document.createElement( 'col' );
