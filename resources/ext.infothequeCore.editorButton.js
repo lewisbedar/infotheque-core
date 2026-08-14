@@ -691,10 +691,9 @@
 		button.addEventListener( 'click', function ( e ) {
 			e.stopPropagation();
 			if ( panel.hidden ) {
-				panel.hidden = false;
-				positionPanel();
+				openPanel();
 			} else {
-				panel.hidden = true;
+				closePanel();
 			}
 		} );
 
@@ -718,14 +717,33 @@
 			panel.style.left = ( Math.max( left, 8 ) + window.scrollX ) + 'px';
 			panel.style.minWidth = rect.width + 'px';
 		}
-		document.addEventListener( 'click', function ( e ) {
+
+		function outsideClick( e ) {
 			if ( e.target !== button && !panel.contains( e.target ) ) {
-				panel.hidden = true;
+				closePanel();
 			}
-		} );
-		window.addEventListener( 'scroll', function () {
+		}
+
+		function openPanel() {
+			panel.hidden = false;
+			positionPanel();
+			// Deferred: attaching this synchronously let the very click that
+			// opened the panel immediately bubble into it and close the
+			// panel right back — observed only inside VisualEditor, never
+			// on a plain source-mode edit page (its own click handling
+			// evidently interacts with this differently). Deferring by a
+			// tick sidesteps needing to know exactly why.
+			setTimeout( function () {
+				document.addEventListener( 'click', outsideClick );
+			}, 0 );
+		}
+
+		function closePanel() {
 			panel.hidden = true;
-		}, true );
+			document.removeEventListener( 'click', outsideClick );
+		}
+
+		window.addEventListener( 'scroll', closePanel, true );
 
 		container.appendChild( wrap );
 		return markField( wrap, field, function () {
