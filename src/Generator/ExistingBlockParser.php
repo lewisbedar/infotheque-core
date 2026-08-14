@@ -42,7 +42,7 @@ class ExistingBlockParser {
 		$title = [];
 		$rowsByNumber = [];
 
-		foreach ( preg_split( '/\n\s*\|/', $inner ) as $chunk ) {
+		foreach ( $this->splitParams( $inner ) as $chunk ) {
 			$chunk = ltrim( $chunk, "|\n\r\t " );
 			$eq = strpos( $chunk, '=' );
 			if ( $chunk === '' || $eq === false ) {
@@ -69,6 +69,43 @@ class ExistingBlockParser {
 
 		ksort( $rowsByNumber );
 		return [ 'title' => $title, 'rows' => array_values( $rowsByNumber ) ];
+	}
+
+	/**
+	 * Splits a template call's inner content ("nom1=A|type1=B|...") into
+	 * one chunk per "|param=value" pair. Depth-tracks "[[ ]]" and "{{ }}"
+	 * so a "|" inside a piped wikilink (e.g. "[[Fichier:x|thumb]]") or a
+	 * nested template doesn't end a chunk early — this also makes the
+	 * split independent of whether the call is written one param per
+	 * line or all on a single line, unlike a plain "\n|" split.
+	 *
+	 * @return list<string>
+	 */
+	private function splitParams( string $inner ): array {
+		$chunks = [];
+		$current = '';
+		$depth = 0;
+		$len = strlen( $inner );
+		for ( $i = 0; $i < $len; $i++ ) {
+			$ch = $inner[ $i ];
+			$next = $i + 1 < $len ? $inner[ $i + 1 ] : '';
+			if ( ( $ch === '[' && $next === '[' ) || ( $ch === '{' && $next === '{' ) ) {
+				$depth++;
+				$current .= $ch . $next;
+				$i++;
+			} elseif ( ( $ch === ']' && $next === ']' ) || ( $ch === '}' && $next === '}' ) ) {
+				$depth = max( 0, $depth - 1 );
+				$current .= $ch . $next;
+				$i++;
+			} elseif ( $ch === '|' && $depth === 0 ) {
+				$chunks[] = $current;
+				$current = '';
+			} else {
+				$current .= $ch;
+			}
+		}
+		$chunks[] = $current;
+		return $chunks;
 	}
 
 	/**
