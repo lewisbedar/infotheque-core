@@ -82,5 +82,6 @@
 	"infothequecore-links-remove": "Tooltip on the × button removing one link entry in a Links-widget cell.",
 	"infothequecore-photo-browse-placeholder": "Placeholder for the file-search input shown next to a File-widget field, to browse already-uploaded files.",
 	"infothequecore-file-upload-button": "Button label opening MediaWiki's own upload dialog next to a File-widget field that has allowUpload set (currently only Téléchargements-logiciels' Photo field).",
+	"infothequecore-multifile-add": "Button label to add another (empty, to fill in manually) row in the gallery/multi-file widget, alongside the upload button which adds a filled-in row directly.",
 	"infothequecore-select-placeholder": "Text shown on a closed MultiSelect dropdown button when nothing is selected yet."
 }

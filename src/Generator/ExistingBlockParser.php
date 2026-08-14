@@ -156,6 +156,10 @@ class ExistingBlockParser {
 	}
 
 	private function reverseTransform( FieldDefinition $field, string $value ): string {
+		if ( $field->widget === FieldWidget::File && $field->multiple ) {
+			return $this->parseGalleryToJson( $value );
+		}
+
 		if ( $field->widget === FieldWidget::File ) {
 			if ( preg_match( '/^\[\[(?:Fichier|File)\s*:\s*(.*?)(?:\||\]\])/iu', $value, $m ) ) {
 				return $m[1];
@@ -192,5 +196,28 @@ class ExistingBlockParser {
 			}
 		}
 		return json_encode( $links, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+	}
+
+	/**
+	 * Reverse of FieldDefinition::buildGalleryWikitext(): either a
+	 * "<gallery>...</gallery>" block (one bare/prefixed file name per
+	 * line, an optional "|caption" dropped) or a single "[[Fichier:...]]"
+	 * link (pre-existing rows from before the gallery feature existed) →
+	 * JSON array of bare file names.
+	 */
+	private function parseGalleryToJson( string $value ): string {
+		$names = [];
+		if ( preg_match( '/<gallery[^>]*>(.*?)<\/gallery>/is', $value, $m ) ) {
+			foreach ( preg_split( '/\r?\n/', trim( $m[1] ) ) as $line ) {
+				$line = preg_replace( '/\|.*$/', '', trim( $line ) );
+				if ( $line === '' ) {
+					continue;
+				}
+				$names[] = preg_replace( '/^(Fichier|File)\s*:\s*/iu', '', $line );
+			}
+		} elseif ( preg_match( '/^\[\[(?:Fichier|File)\s*:\s*(.*?)(?:\||\]\])/iu', $value, $m ) ) {
+			$names[] = $m[1];
+		}
+		return json_encode( $names, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 	}
 }

@@ -272,7 +272,8 @@
    can hold several stacked rows of their own — a little breathing room
    instead of going fully edge-to-edge. */
 .ithc-rows-table .ithc-links-wrap,
-.ithc-rows-table .ithc-file-wrap {
+.ithc-rows-table .ithc-file-wrap,
+.ithc-rows-table .ithc-multifile-wrap {
 	display: block;
 	padding: 4px;
 }
@@ -556,12 +557,19 @@
 	background: #eef3ff;
 }
 
-/* File widget: text input + live thumbnail + search-to-browse dropdown. */
+/* File widget: text input + live thumbnail + search-to-browse dropdown.
+   .ithc-file-entry is the reusable unit (see buildFileEntryUnit() in JS);
+   .ithc-file-wrap is just the single-file widget's outer container, and
+   .ithc-multifile-wrap/-row are the gallery widget's (several entries). */
 
 .ithc-file-wrap {
-	position: relative;
 	display: block;
 	min-width: 10em;
+}
+
+.ithc-file-entry {
+	position: relative;
+	display: block;
 }
 
 .ithc-file-thumb {
@@ -587,6 +595,29 @@
 
 .ithc-file-upload-btn:hover {
 	background: #eef3ff;
+}
+
+.ithc-multifile-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 4px;
+	margin-bottom: 8px;
+}
+
+.ithc-multifile-row .ithc-file-entry {
+	flex: 1 1 auto;
+	min-width: 10em;
+}
+
+.ithc-multifile-remove {
+	flex: 0 0 auto;
+	border: none;
+	background: none;
+	color: #c0392b;
+	cursor: pointer;
+	font-size: 16px;
+	line-height: 1;
+	padding: 0 4px;
 }
 
 /* Above .ithc-form-overlay's z-index:9999. !important because OOUI's own

@@ -543,7 +543,9 @@
 			case 'links':
 				return renderLinksInput( field, value, container );
 			case 'file':
-				return renderFileInput( field, value, container );
+				return field.multiple
+					? renderMultiFileInput( field, value, container )
+					: renderFileInput( field, value, container );
 			case 'textarea':
 			case 'text':
 			default:
@@ -802,19 +804,22 @@
 		} );
 	}
 
-	/** Bare wiki file name, with a live thumbnail preview and a search-to-browse dropdown. */
-	function renderFileInput( field, value, container ) {
+	/**
+	 * One "bare wiki file name" unit: text input + live thumbnail preview +
+	 * search-to-browse dropdown. Shared by the single-file widget
+	 * (renderFileInput) and each row of the gallery/multi-file widget
+	 * (renderMultiFileInput) — same lookup logic either way, just embedded
+	 * once vs. repeated.
+	 */
+	function buildFileEntryUnit( placeholder, initialValue ) {
 		var wrap = document.createElement( 'span' );
-		wrap.className = 'ithc-file-wrap';
+		wrap.className = 'ithc-file-entry';
 
 		var input = document.createElement( 'input' );
 		input.type = 'text';
 		input.className = 'ithc-field-input';
-		input.placeholder = field.example || mw.msg( 'infothequecore-photo-browse-placeholder' );
-		if ( field.help ) {
-			input.title = field.help;
-		}
-		input.value = value || '';
+		input.placeholder = placeholder;
+		input.value = initialValue || '';
 
 		var thumb = document.createElement( 'img' );
 		thumb.className = 'ithc-file-thumb';
@@ -911,6 +916,25 @@
 		} );
 
 		wrap.appendChild( input );
+		wrap.appendChild( thumb );
+		wrap.appendChild( suggestions );
+
+		if ( initialValue ) {
+			updateThumb();
+		}
+
+		return { wrap: wrap, input: input, updateThumb: updateThumb };
+	}
+
+	function renderFileInput( field, value, container ) {
+		var outerWrap = document.createElement( 'span' );
+		outerWrap.className = 'ithc-file-wrap';
+
+		var entry = buildFileEntryUnit( field.example || mw.msg( 'infothequecore-photo-browse-placeholder' ), value );
+		if ( field.help ) {
+			entry.input.title = field.help;
+		}
+		outerWrap.appendChild( entry.wrap );
 
 		if ( field.allowUpload ) {
 			var uploadBtn = document.createElement( 'button' );
@@ -918,26 +942,110 @@
 			uploadBtn.className = 'ithc-file-upload-btn';
 			uploadBtn.textContent = mw.msg( 'infothequecore-file-upload-button' );
 			uploadBtn.addEventListener( 'click', function () {
-				openUploadDialog( input, updateThumb );
+				openUploadDialog( function ( name ) {
+					entry.input.value = name;
+					entry.updateThumb();
+				} );
 			} );
-			wrap.appendChild( uploadBtn );
+			outerWrap.appendChild( uploadBtn );
 		}
 
-		wrap.appendChild( thumb );
-		wrap.appendChild( suggestions );
-		container.appendChild( wrap );
+		container.appendChild( outerWrap );
 
-		if ( value ) {
-			updateThumb();
-		}
-
-		return markField( wrap, field, function () {
-			return input.value;
+		return markField( outerWrap, field, function () {
+			return entry.input.value;
 		} );
 	}
 
-	/** Opens MediaWiki's own upload dialog; on success, fills `input` with the bare file name. */
-	function openUploadDialog( input, onFilled ) {
+	/**
+	 * Repeatable list of file entries — generates a single [[Fichier:]]
+	 * link when there's exactly one, or a <gallery> block when there are
+	 * several (see FieldDefinition::toWikitext()). Per Lewis, adding
+	 * photos is meant to feel like "upload, upload, upload" rather than
+	 * "add a row, then upload into it" — so the upload button appends a
+	 * new row itself instead of requiring one first.
+	 */
+	function renderMultiFileInput( field, value, container ) {
+		var wrap = document.createElement( 'div' );
+		wrap.className = 'ithc-multifile-wrap';
+
+		var list = document.createElement( 'div' );
+		list.className = 'ithc-multifile-list';
+		wrap.appendChild( list );
+
+		function addRow( name ) {
+			var row = document.createElement( 'div' );
+			row.className = 'ithc-multifile-row';
+
+			var entry = buildFileEntryUnit( mw.msg( 'infothequecore-photo-browse-placeholder' ), name );
+			row.appendChild( entry.wrap );
+
+			var removeBtn = document.createElement( 'button' );
+			removeBtn.type = 'button';
+			removeBtn.className = 'ithc-multifile-remove';
+			removeBtn.textContent = '×';
+			removeBtn.title = mw.msg( 'infothequecore-remove-row' );
+			removeBtn.addEventListener( 'click', function () {
+				row.remove();
+			} );
+			row.appendChild( removeBtn );
+
+			list.appendChild( row );
+			return entry;
+		}
+
+		var initial;
+		try {
+			initial = JSON.parse( value || '[]' );
+		} catch ( e ) {
+			initial = [];
+		}
+		if ( !Array.isArray( initial ) ) {
+			initial = [];
+		}
+		initial.forEach( function ( name ) {
+			addRow( name );
+		} );
+
+		var uploadBtn = document.createElement( 'button' );
+		uploadBtn.type = 'button';
+		uploadBtn.className = 'ithc-file-upload-btn';
+		uploadBtn.textContent = mw.msg( 'infothequecore-file-upload-button' );
+		uploadBtn.addEventListener( 'click', function () {
+			openUploadDialog( function ( name ) {
+				addRow( name );
+			} );
+		} );
+		wrap.appendChild( uploadBtn );
+
+		var addBtn = document.createElement( 'button' );
+		addBtn.type = 'button';
+		addBtn.className = 'ithc-links-add';
+		addBtn.textContent = mw.msg( 'infothequecore-multifile-add' );
+		addBtn.addEventListener( 'click', function () {
+			addRow( '' );
+		} );
+		wrap.appendChild( addBtn );
+
+		container.appendChild( wrap );
+
+		return markField( wrap, field, function () {
+			var names = Array.prototype.map.call(
+				list.querySelectorAll( '.ithc-multifile-row .ithc-field-input' ),
+				function ( inp ) {
+					return inp.value.trim();
+				}
+			).filter( function ( n ) {
+				return n;
+			} );
+			// Empty string, not "[]", when unused — matches how every
+			// other optional field signals "not filled in" server-side.
+			return names.length ? JSON.stringify( names ) : '';
+		} );
+	}
+
+	/** Opens MediaWiki's own upload dialog; on success, calls `onSuccess(bareFileName)`. */
+	function openUploadDialog( onSuccess ) {
 		mw.loader.using( 'mediawiki.Upload.Dialog' ).done( function () {
 			var uploadDialog = new mw.Upload.Dialog( {} );
 			var windowManager = new OO.ui.WindowManager();
@@ -950,8 +1058,7 @@
 			windowManager.addWindows( [ uploadDialog ] );
 
 			uploadDialog.on( 'fileSaved', function ( imageInfo ) {
-				input.value = ( imageInfo.canonicaltitle || '' ).replace( /^(Fichier|File)\s*:\s*/i, '' );
-				onFilled();
+				onSuccess( ( imageInfo.canonicaltitle || '' ).replace( /^(Fichier|File)\s*:\s*/i, '' ) );
 			} );
 			windowManager.openWindow( uploadDialog ).closed.then( function () {
 				windowManager.$element.remove();

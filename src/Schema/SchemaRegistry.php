@@ -103,7 +103,8 @@ class SchemaRegistry {
 					widget: FieldWidget::File,
 					labelMsg: 'infothequecore-field-image',
 					wikitextWrap: '[[Fichier:%s|centré|vignette|150x150px]]',
-					allowUpload: true
+					allowUpload: true,
+					multiple: true
 				),
 				new FieldDefinition(
 					key: 'liens',

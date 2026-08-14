@@ -48,6 +48,12 @@ class FieldDefinition {
 	 *   search-existing-file input. Off by default — deliberately not set
 	 *   for Pilotes' "fichier" field, since uploading drivers to the wiki
 	 *   isn't the expected path there (see its placeholder/help text).
+	 * @param bool $multiple File widget only: a repeatable list of file
+	 *   entries (JSON-encoded array submitted from the client) instead of
+	 *   a single one. Generates a single "[[Fichier:%s]]" ($wikitextWrap)
+	 *   when there's exactly one, or a "<gallery>" block when there are
+	 *   several — Modèle:Téléchargements' "image" param already documents
+	 *   accepting either ("Photo ou galerie illustrant cette édition").
 	 */
 	public function __construct(
 		public readonly string $key,
@@ -62,7 +68,8 @@ class FieldDefinition {
 		public readonly array $options = [],
 		public readonly ?string $mergeIntoKey = null,
 		public readonly ?string $lineWrap = null,
-		public readonly bool $allowUpload = false
+		public readonly bool $allowUpload = false,
+		public readonly bool $multiple = false
 	) {
 	}
 
@@ -77,6 +84,10 @@ class FieldDefinition {
 
 		if ( $this->widget === FieldWidget::Links ) {
 			return self::buildLinksWikitext( $value );
+		}
+
+		if ( $this->widget === FieldWidget::File && $this->multiple ) {
+			return $this->buildGalleryWikitext( $value );
 		}
 
 		if ( $this->lineWrap !== null ) {
@@ -151,5 +162,31 @@ class FieldDefinition {
 			return $formatted[0];
 		}
 		return implode( "\n", array_map( static fn ( string $f ): string => '* ' . $f, $formatted ) );
+	}
+
+	/**
+	 * @param string $json JSON-encoded list of bare wiki file names.
+	 * @return string "" if none, $wikitextWrap applied to the single name
+	 *   if there's exactly one, or a "<gallery>" block if there are several.
+	 */
+	private function buildGalleryWikitext( string $json ): string {
+		$names = json_decode( $json, true );
+		if ( !is_array( $names ) ) {
+			return '';
+		}
+
+		$names = array_values( array_filter(
+			array_map( static fn ( $n ): string => trim( (string)$n ), $names ),
+			static fn ( string $n ): bool => $n !== ''
+		) );
+		if ( $names === [] ) {
+			return '';
+		}
+		if ( count( $names ) === 1 ) {
+			return $this->wikitextWrap !== null ? sprintf( $this->wikitextWrap, $names[0] ) : $names[0];
+		}
+
+		$lines = array_map( static fn ( string $n ): string => 'Fichier:' . $n, $names );
+		return "<gallery>\n" . implode( "\n", $lines ) . "\n</gallery>";
 	}
 }
