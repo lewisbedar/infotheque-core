@@ -85,7 +85,7 @@
 	"infothequecore-links-label-placeholder": "Link text",
 	"infothequecore-links-remove": "Remove this link",
 	"infothequecore-photo-browse-placeholder": "Search an already uploaded file…",
-	"infothequecore-file-upload-button": "Upload a new photo…",
-	"infothequecore-multifile-add": "+ Search an already uploaded photo",
+	"infothequecore-file-upload-button": "New photo…",
+	"infothequecore-multifile-add": "+ Existing photo",
 	"infothequecore-select-placeholder": "Choose…"
 }
