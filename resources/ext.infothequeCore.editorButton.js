@@ -183,7 +183,10 @@
 			formatversion: 2
 		} ).done( function ( data ) {
 			var rows = ( data.rows && data.rows.length ) ? data.rows : [ {} ];
-			buildOverlay( schema, textarea, pendingBlock, data.title || {}, rows, { preFilled: true } );
+			buildOverlay( schema, textarea, pendingBlock, data.title || {}, rows, {
+				preFilled: true,
+				mismatchLabel: data.possibleMismatch || null
+			} );
 		} ).fail( function () {
 			buildOverlay( schema, textarea, pendingBlock, {}, [ {} ], { preFilled: false } );
 		} );
@@ -239,6 +242,23 @@
 			document.body.appendChild( overlay );
 			currentOverlay = overlay;
 			return;
+		}
+
+		if ( options.mismatchLabel ) {
+			var mismatchEl = document.createElement( 'div' );
+			mismatchEl.className = 'ithc-mismatch-warning';
+			var mismatchText = document.createElement( 'span' );
+			mismatchText.textContent = mw.msg( 'infothequecore-schema-mismatch-warning', options.mismatchLabel );
+			mismatchEl.appendChild( mismatchText );
+			var mismatchClose = document.createElement( 'button' );
+			mismatchClose.type = 'button';
+			mismatchClose.className = 'ithc-mismatch-dismiss';
+			mismatchClose.textContent = '×';
+			mismatchClose.addEventListener( 'click', function () {
+				mismatchEl.remove();
+			} );
+			mismatchEl.appendChild( mismatchClose );
+			modal.appendChild( mismatchEl );
 		}
 
 		var titleContainer = document.createElement( 'div' );

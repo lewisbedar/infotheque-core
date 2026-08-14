@@ -58,6 +58,7 @@
 	"infothequecore-view-page": "Link text to the page just created.",
 	"infothequecore-error-no-rows": "Validation error when no row's key field (e.g. edition/variante/nom) was filled in.",
 	"infothequecore-error-field-required": "Validation error for a required field left empty on a row that is otherwise in use. $1 is the row number, $2 is the field's label.",
+	"infothequecore-schema-mismatch-warning": "Dismissible warning shown when an existing block, parsed under the chosen schema, recovered fewer field values than parsing it under the sibling schema would have (Téléchargements-logiciels ↔ Manuels, which share Modèle:Téléchargements). $1 is the sibling schema's label.",
 
 	"infothequecore-editor-trigger": "Label of the single trigger button injected in the source editor, which opens the assistant overlay.",
 	"infothequecore-add-row": "Button label to add another dynamic row in the JS overlay form.",

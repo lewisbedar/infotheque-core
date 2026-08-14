@@ -56,10 +56,36 @@ class ApiInfothequeCore extends ApiBase {
 	}
 
 	private function doParseExisting( FormSchema $schema, string $raw ): void {
-		$parsed = ( new ExistingBlockParser() )->parse( $schema, $raw );
+		$parser = new ExistingBlockParser();
+		$parsed = $parser->parse( $schema, $raw );
 		$result = $this->getResult();
 		$result->addValue( null, 'title', (object)( $parsed['title'] ?? [] ) );
 		$result->addValue( null, 'rows', $parsed['rows'] ?? [] );
+
+		// Téléchargements-logiciels and Manuels target the same template,
+		// so a block can be structurally valid under either schema. If
+		// parsing it as the sibling would have recovered more field
+		// values, it's probably a block authored by that other form —
+		// surface that so the JS can warn before the user edits it.
+		$sibling = SchemaRegistry::sibling( $schema->id );
+		if ( $sibling !== null ) {
+			$siblingParsed = $parser->parse( $sibling, $raw );
+			if ( $siblingParsed !== null
+				&& $this->countFilledFields( $siblingParsed ) > $this->countFilledFields( $parsed ?? [] )
+			) {
+				$result->addValue( null, 'possibleMismatch', wfMessage( $sibling->labelMsg )->text() );
+			}
+		}
+	}
+
+	/** @param array{title?: array<string,string>, rows?: list<array<string,string>>} $parsed */
+	private function countFilledFields( array $parsed ): int {
+		$isFilled = static fn ( string $v ): bool => $v !== '';
+		$count = count( array_filter( $parsed['title'] ?? [], $isFilled ) );
+		foreach ( $parsed['rows'] ?? [] as $row ) {
+			$count += count( array_filter( $row, $isFilled ) );
+		}
+		return $count;
 	}
 
 	private function doGenerate( FormSchema $schema, string $titleJson, string $rowsJson ): void {

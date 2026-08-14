@@ -62,6 +62,7 @@
 	"infothequecore-view-page": "View page",
 	"infothequecore-error-no-rows": "Add at least one row before continuing.",
 	"infothequecore-error-field-required": "Row $1: field \"$2\" is required.",
+	"infothequecore-schema-mismatch-warning": "This table looks more like a \"$1\" table. Double-check you picked the right content type before editing.",
 
 	"infothequecore-editor-trigger": "+ Add/edit an Infothèque table",
 	"infothequecore-add-row": "+ Add a row",

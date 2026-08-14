@@ -30,6 +30,22 @@ class SchemaRegistry {
 		return self::all()[$id] ?? null;
 	}
 
+	/**
+	 * The other schema id targeting the same wikitext template, if any.
+	 * Only Téléchargements-logiciels and Manuels currently share one
+	 * (Modèle:Téléchargements) — used to warn when an existing block
+	 * looks like it was more likely authored by the sibling form.
+	 */
+	private const SIBLINGS = [
+		'telechargements-logiciels' => 'manuels',
+		'manuels' => 'telechargements-logiciels',
+	];
+
+	public static function sibling( string $id ): ?FormSchema {
+		$siblingId = self::SIBLINGS[$id] ?? null;
+		return $siblingId !== null ? self::get( $siblingId ) : null;
+	}
+
 	private static function telechargementsLogiciels(): FormSchema {
 		return new FormSchema(
 			id: 'telechargements-logiciels',
