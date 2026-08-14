@@ -92,7 +92,7 @@
 			item.textContent = schema.label;
 			item.addEventListener( 'click', function () {
 				dropdown.hidden = true;
-				openAssistant( textarea, schema );
+				openAssistant( textarea, schema, schemas );
 			} );
 			dropdown.appendChild( item );
 		} );
@@ -160,7 +160,28 @@
 
 	// ---- Opening the assistant ---------------------------------------------
 
-	function openAssistant( textarea, schema ) {
+	/**
+	 * If the cursor sits inside some *other* schema's {{templateName}}
+	 * block, returns that schema's label — used when the chosen schema
+	 * found nothing there, to tell "wrong form" apart from "genuinely new
+	 * content" (Téléchargements-logiciels/Manuels share a template, so
+	 * that ambiguity is instead resolved server-side after parsing; see
+	 * ApiInfothequeCore::doParseExisting()'s possibleMismatch).
+	 */
+	function findOtherSchemaBlockLabel( text, cursorPos, excludeId, allSchemas ) {
+		for ( var i = 0; i < SCHEMA_IDS.length; i++ ) {
+			var id = SCHEMA_IDS[ i ];
+			if ( id === excludeId || !allSchemas[ id ] ) {
+				continue;
+			}
+			if ( findEnclosingBlock( text, allSchemas[ id ].templateName, cursorPos ) ) {
+				return allSchemas[ id ].label;
+			}
+		}
+		return null;
+	}
+
+	function openAssistant( textarea, schema, allSchemas ) {
 		if ( currentOverlay ) {
 			return; // one at a time
 		}
@@ -170,7 +191,8 @@
 		var pendingBlock = block ? { start: block.start, end: block.end } : null;
 
 		if ( !block ) {
-			buildOverlay( schema, textarea, pendingBlock, {}, [ {} ], { preFilled: false } );
+			var mismatchLabel = findOtherSchemaBlockLabel( textarea.value, cursorPos, schema.id, allSchemas );
+			buildOverlay( schema, textarea, pendingBlock, {}, [ {} ], { preFilled: false, mismatchLabel: mismatchLabel } );
 			return;
 		}
 
