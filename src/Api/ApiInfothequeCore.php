@@ -73,7 +73,13 @@ class ApiInfothequeCore extends ApiBase {
 
 		$result = $this->getResult();
 		if ( $errors !== [] ) {
-			$result->addValue( null, 'errors', array_map( static fn ( $m ) => $m->text, $errors ) );
+			// Not named "errors": mw.Api reserves that top-level key for
+			// MediaWiki's own API error format ({"errors":[{code,text,...}]})
+			// and routes any response carrying it to .fail() instead of
+			// .done(), regardless of HTTP status — colliding with it here
+			// silently misrouted every validation error to the JS's generic
+			// failure handler.
+			$result->addValue( null, 'validationErrors', array_map( static fn ( $m ) => $m->text, $errors ) );
 			return;
 		}
 

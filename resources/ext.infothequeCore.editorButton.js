@@ -929,8 +929,8 @@
 			formatversion: 2
 		} ).done( function ( data ) {
 			insertBtn.disabled = false;
-			if ( data.errors && data.errors.length ) {
-				showErrors( errorsEl, data.errors );
+			if ( data.validationErrors && data.validationErrors.length ) {
+				showErrors( errorsEl, data.validationErrors );
 				return;
 			}
 			applyResult( textarea, pendingBlock, data.wikitext );
